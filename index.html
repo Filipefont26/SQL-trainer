@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Trainer — Aprenda SQL na Prática</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --green: #10b981;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* BG Grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* HEADER */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,14,26,0.9);
+    backdrop-filter: blur(10px);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+  }
+
+  .logo-text {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text span { color: var(--accent); }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .level-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 14px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* MAIN LAYOUT */
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 20px;
+  }
+
+  /* PROGRESS BAR */
+  .progress-track {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+
+  .progress-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .progress-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .xp-badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--yellow);
+    background: rgba(245,158,11,0.1);
+    border: 1px solid rgba(245,158,11,0.2);
+    padding: 3px 10px;
+    border-radius: 99px;
+  }
+
+  /* CHALLENGE CARD */
+  .challenge-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .challenge-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), transparent);
+  }
+
+  .challenge-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 16px;
+  }
+
+  .challenge-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+
+  .tag-difficulty-easy { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+  .tag-difficulty-medium { background: rgba(245,158,11,0.15); color: var(--yellow); border: 1px solid rgba(245,158,11,0.25); }
+  .tag-difficulty-hard { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+  .tag-topic { background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.2); }
+
+  .challenge-number {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .challenge-title {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.3;
+    margin-bottom: 10px;
+  }
+
+  .challenge-desc {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+
+  /* SCHEMA PANEL */
+  .schema-panel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+
+  .schema-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .tables-grid {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .table-schema {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    min-width: 180px;
+  }
+
+  .table-schema-header {
+    background: rgba(0,212,255,0.08);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .table-icon { opacity: 0.6; }
+
+  .table-schema-body { padding: 10px 0; }
+
+  .col-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+
+  .col-name { color: var(--text); }
+  .col-type { color: var(--muted); font-size: 10px; }
+  .col-pk {
+    font-size: 9px;
+    background: rgba(245,158,11,0.15);
+    color: var(--yellow);
+    border-radius: 3px;
+    padding: 1px 4px;
+    font-weight: 700;
+  }
+
+  /* EDITOR */
+  .editor-wrap {
+    position: relative;
+    margin-bottom: 16px;
+  }
+
+  .editor-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .editor-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  textarea#query-editor {
+    width: 100%;
+    min-height: 140px;
+    background: #060d1a;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: #e2e8f0;
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.8;
+    padding: 20px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    tab-size: 2;
+  }
+
+  textarea#query-editor:focus {
+    border-color: rgba(0,212,255,0.4);
+    box-shadow: 0 0 0 3px rgba(0,212,255,0.06);
+  }
+
+  textarea#query-editor::placeholder { color: #334155; }
+
+  .editor-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-run {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--accent), #0099cc);
+    color: #000;
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+
+  .btn-run:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,212,255,0.3); }
+  .btn-run:active { transform: translateY(0); }
+  .btn-run:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .btn-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-hint:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-skip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: auto;
+  }
+
+  .btn-skip:hover { border-color: var(--muted); color: var(--text); }
+
+  .btn-back {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-back:hover { border-color: var(--accent2); color: var(--accent2); }
+  .btn-back:disabled { opacity: 0.25; cursor: not-allowed; }
+
+  /* LOADING */
+  .loading-bar {
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    margin-bottom: 20px;
+    display: none;
+    animation: loadingAnim 1.5s infinite;
+  }
+
+  @keyframes loadingAnim {
+    0% { transform: scaleX(0); transform-origin: left; }
+    50% { transform: scaleX(1); transform-origin: left; }
+    51% { transform: scaleX(1); transform-origin: right; }
+    100% { transform: scaleX(0); transform-origin: right; }
+  }
+
+  /* FEEDBACK PANEL */
+  .feedback-panel {
+    display: none;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    animation: slideUp 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .feedback-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 24px;
+  }
+
+  .feedback-header.correct { background: rgba(16,185,129,0.1); border-bottom: 1px solid rgba(16,185,129,0.2); }
+  .feedback-header.wrong { background: rgba(239,68,68,0.08); border-bottom: 1px solid rgba(239,68,68,0.15); }
+  .feedback-header.hint-mode { background: rgba(245,158,11,0.08); border-bottom: 1px solid rgba(245,158,11,0.15); }
+
+  .feedback-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .feedback-icon.correct { background: rgba(16,185,129,0.2); }
+  .feedback-icon.wrong { background: rgba(239,68,68,0.15); }
+  .feedback-icon.hint-mode { background: rgba(245,158,11,0.15); }
+
+  .feedback-title {
+    font-size: 17px;
+    font-weight: 800;
+  }
+
+  .feedback-title.correct { color: var(--green); }
+  .feedback-title.wrong { color: var(--red); }
+  .feedback-title.hint-mode { color: var(--yellow); }
+
+  .feedback-subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .feedback-body {
+    background: var(--surface);
+    padding: 24px;
+  }
+
+  .feedback-section {
+    margin-bottom: 20px;
+  }
+
+  .feedback-section:last-child { margin-bottom: 0; }
+
+  .feedback-section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .feedback-text {
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--text);
+  }
+
+  pre.feedback-code {
+    background: #060d1a;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--accent);
+    overflow-x: auto;
+    white-space: pre-wrap;
+  }
+
+  .result-table-wrap {
+    background: #060d1a;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: auto;
+    max-height: 220px;
+  }
+
+  table.result-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  table.result-table th {
+    background: rgba(0,212,255,0.06);
+    color: var(--accent);
+    font-weight: 700;
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    position: sticky; top: 0;
+  }
+
+  table.result-table td {
+    padding: 9px 16px;
+    border-bottom: 1px solid rgba(30,45,69,0.5);
+    color: var(--text);
+  }
+
+  table.result-table tr:last-child td { border-bottom: none; }
+  table.result-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .btn-next {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--green), #059669);
+    color: white;
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 20px;
+  }
+
+  .btn-next:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); }
+
+  /* HINT BOX */
+  .hint-box {
+    display: none;
+    background: rgba(245,158,11,0.06);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: var(--yellow);
+    line-height: 1.7;
+    animation: slideUp 0.25s ease;
+  }
+
+  .hint-box strong { color: #fbbf24; }
+
+  /* SIDE STATS */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    text-align: center;
+  }
+
+  .stat-number {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-number.green { color: var(--green); }
+  .stat-number.yellow { color: var(--yellow); }
+  .stat-number.accent { color: var(--accent); }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* STREAK */
+  .streak-bar {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 28px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .streak-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+
+  .streak-dot.active { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); }
+  .streak-dot.current { background: rgba(0,212,255,0.15); border-color: rgba(0,212,255,0.5); animation: pulse 2s infinite; }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,212,255,0.3); }
+    50% { box-shadow: 0 0 0 6px rgba(0,212,255,0); }
+  }
+
+  .streak-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  /* FOOTER */
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 30px 20px 40px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+  }
+
+  footer span { color: var(--accent); }
+
+  /* SPINNER */
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(0,0,0,0.2);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    header { padding: 16px 20px; }
+    .container { padding: 24px 16px; }
+    .stats-row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .stat-number { font-size: 22px; }
+    .tables-grid { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">S<span style="color:rgba(255,255,255,0.5)">Q</span>L</div>
+    <div class="logo-text">SQL<span>Trainer</span></div>
+  </div>
+  <div class="header-meta">
+    <span class="level-badge">NÍVEL 1</span>
+
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-number green" id="stat-correct">0</div>
+      <div class="stat-label">Corretas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number yellow" id="stat-xp">0</div>
+      <div class="stat-label">XP Total</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number accent" id="stat-streak">1</div>
+      <div class="stat-label">Sequência</div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-track">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width: 0%"></div>
+    </div>
+    <div class="progress-label" id="progress-label">0 / 5 desafios</div>
+  </div>
+
+  <!-- STREAK DOTS -->
+  <div class="streak-bar" id="streak-bar">
+    <div class="streak-dot current" id="dot-1">⚡</div>
+    <div class="streak-dot" id="dot-2">○</div>
+    <div class="streak-dot" id="dot-3">○</div>
+    <div class="streak-dot" id="dot-4">○</div>
+    <div class="streak-dot" id="dot-5">○</div>
+    <div class="streak-dot" id="dot-6">○</div>
+    <div class="streak-dot" id="dot-7">○</div>
+    <div class="streak-dot" id="dot-8">○</div>
+    <div class="streak-dot" id="dot-9">○</div>
+    <div class="streak-dot" id="dot-10">○</div>
+    <div class="streak-dot" id="dot-11">○</div>
+    <div class="streak-dot" id="dot-12">○</div>
+    <div class="streak-dot" id="dot-13">○</div>
+    <div class="streak-dot" id="dot-14">○</div>
+    <div class="streak-dot" id="dot-15">○</div>
+    <div class="streak-dot" id="dot-16">○</div>
+    <div class="streak-dot" id="dot-17">○</div>
+    <div class="streak-dot" id="dot-18">○</div>
+    <div class="streak-dot" id="dot-19">○</div>
+    <div class="streak-dot" id="dot-20">○</div>
+    <div class="streak-label">Sequência de acertos</div>
+  </div>
+
+  <!-- CHALLENGE CARD -->
+  <div class="challenge-card">
+    <div class="challenge-header">
+      <div class="challenge-meta" id="challenge-meta">
+        <!-- filled by JS -->
+      </div>
+      <div class="challenge-number" id="challenge-number">Desafio 1 de 5</div>
+    </div>
+
+    <div class="challenge-title" id="challenge-title">Carregando...</div>
+    <div class="challenge-desc" id="challenge-desc"></div>
+
+    <!-- SCHEMA -->
+    <div class="schema-panel">
+      <div class="schema-label">📋 Schema das Tabelas</div>
+      <div class="tables-grid" id="schema-tables"></div>
+    </div>
+
+    <!-- EDITOR -->
+    <div class="editor-label">✍️ Sua Query SQL</div>
+    <div class="hint-box" id="hint-box"></div>
+    <div class="editor-wrap">
+      <textarea id="query-editor" placeholder="-- Escreva sua query SQL aqui
+SELECT ..."></textarea>
+    </div>
+
+    <div class="editor-actions">
+      <button class="btn-run" id="btn-run" onclick="runQuery()">
+        <span>▶</span>
+        <span>Executar Query</span>
+        <div class="spinner" id="spinner"></div>
+      </button>
+      <button class="btn-hint" onclick="showHint()">💡 Dica</button>
+      <button class="btn-back" id="btn-back" onclick="prevChallenge()">← Voltar</button>
+      <button class="btn-skip" onclick="nextChallenge()">Pular →</button>
+    </div>
+  </div>
+
+  <!-- LOADING BAR -->
+  <div class="loading-bar" id="loading-bar"></div>
+
+  <!-- FEEDBACK -->
+  <div class="feedback-panel" id="feedback-panel">
+    <div class="feedback-header" id="feedback-header">
+      <div class="feedback-icon" id="feedback-icon"></div>
+      <div>
+        <div class="feedback-title" id="feedback-title"></div>
+        <div class="feedback-subtitle" id="feedback-subtitle"></div>
+      </div>
+    </div>
+    <div class="feedback-body" id="feedback-body"></div>
+  </div>
+
+</div>
+
+
+
+<script>
+// ===== CHALLENGES DATA =====
+const CHALLENGES = [
+  // ---- FÁCEIS ----
+  {
+    id: 1,
+    title: "Clientes de alto valor",
+    desc: "Liste os clientes que realizaram pedidos com valor total acima de R$ 1.000. Retorne o nome do cliente e o valor total gasto, ordenados do maior para o menor.",
+    difficulty: "easy",
+    topic: "JOIN + SUM + HAVING",
+    xp: 100,
+    schema: [
+      { name: "clientes", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "email", type: "VARCHAR" },{ name: "cidade", type: "VARCHAR" }] },
+      { name: "pedidos", cols: [{ name: "id", type: "INT", pk: true },{ name: "cliente_id", type: "INT" },{ name: "valor", type: "DECIMAL" },{ name: "data", type: "DATE" }] }
+    ],
+    hint: "Use <strong>JOIN</strong> para unir as tabelas, <strong>SUM()</strong> para somar os valores por cliente, <strong>GROUP BY</strong> para agrupar e <strong>HAVING</strong> para filtrar grupos com soma > 1000.",
+    result: [{ nome: "Ana Souza", total_gasto: 3420.50 },{ nome: "Carlos Lima", total_gasto: 2180.00 },{ nome: "Beatriz Costa", total_gasto: 1550.75 }]
+  },
+  {
+    id: 2,
+    title: "Produtos sem estoque",
+    desc: "Encontre todos os produtos que têm estoque zerado (quantidade = 0) e estão ativos. Retorne o nome do produto e a categoria.",
+    difficulty: "easy",
+    topic: "WHERE + AND",
+    xp: 100,
+    schema: [
+      { name: "produtos", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "categoria", type: "VARCHAR" },{ name: "quantidade", type: "INT" },{ name: "ativo", type: "BOOLEAN" }] }
+    ],
+    hint: "Use <strong>WHERE</strong> com duas condições: quantidade = 0 E ativo = true. Use <strong>AND</strong> para combinar as condições.",
+    result: [{ nome: "Notebook Pro", categoria: "Eletrônicos" },{ nome: "Cadeira Gamer", categoria: "Móveis" }]
+  },
+  {
+    id: 3,
+    title: "Emails únicos de clientes",
+    desc: "Liste todos os domínios de email distintos cadastrados na tabela de clientes (ex: gmail.com, hotmail.com). Ordene alfabeticamente.",
+    difficulty: "easy",
+    topic: "DISTINCT + LIKE",
+    xp: 100,
+    schema: [
+      { name: "clientes", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "email", type: "VARCHAR" },{ name: "ativo", type: "BOOLEAN" }] }
+    ],
+    hint: "Use <strong>DISTINCT</strong> e a função <strong>SUBSTRING_INDEX(email, '@', -1)</strong> para extrair o domínio. Ordene com <strong>ORDER BY</strong>.",
+    result: [{ dominio: "gmail.com" },{ dominio: "hotmail.com" },{ dominio: "outlook.com" },{ dominio: "yahoo.com" }]
+  },
+  {
+    id: 4,
+    title: "Contagem por cidade",
+    desc: "Conte quantos clientes existem em cada cidade. Retorne a cidade e a contagem, ordenadas da cidade com mais clientes para a com menos.",
+    difficulty: "easy",
+    topic: "COUNT + GROUP BY",
+    xp: 100,
+    schema: [
+      { name: "clientes", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "cidade", type: "VARCHAR" },{ name: "estado", type: "CHAR(2)" }] }
+    ],
+    hint: "Use <strong>COUNT(*)</strong> para contar, <strong>GROUP BY cidade</strong> para agrupar por cidade e <strong>ORDER BY COUNT(*) DESC</strong> para ordenar.",
+    result: [{ cidade: "São Paulo", total: 142 },{ cidade: "Rio de Janeiro", total: 98 },{ cidade: "Curitiba", total: 54 },{ cidade: "Belo Horizonte", total: 47 }]
+  },
+  {
+    id: 5,
+    title: "Pedidos do último mês",
+    desc: "Liste todos os pedidos realizados nos últimos 30 dias. Retorne o id do pedido, o nome do cliente e o valor, do mais recente para o mais antigo.",
+    difficulty: "easy",
+    topic: "WHERE + DATE",
+    xp: 100,
+    schema: [
+      { name: "clientes", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" }] },
+      { name: "pedidos", cols: [{ name: "id", type: "INT", pk: true },{ name: "cliente_id", type: "INT" },{ name: "valor", type: "DECIMAL" },{ name: "criado_em", type: "DATETIME" }] }
+    ],
+    hint: "Use <strong>JOIN</strong> e filtre com <strong>WHERE criado_em >= NOW() - INTERVAL 30 DAY</strong>. Ordene por <strong>criado_em DESC</strong>.",
+    result: [{ id: 1045, nome: "Fernanda Lima", valor: 890.00 },{ id: 1044, nome: "Ricardo Alves", valor: 320.50 },{ id: 1043, nome: "Ana Souza", valor: 1200.00 }]
+  },
+
+  // ---- MÉDIOS ----
+  {
+    id: 6,
+    title: "Top 5 vendedores do mês",
+    desc: "Liste os 5 funcionários que mais venderam em março de 2024. Mostre o nome do funcionário e o total vendido.",
+    difficulty: "medium",
+    topic: "LIMIT + ORDER BY",
+    xp: 150,
+    schema: [
+      { name: "funcionarios", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "departamento", type: "VARCHAR" }] },
+      { name: "vendas", cols: [{ name: "id", type: "INT", pk: true },{ name: "func_id", type: "INT" },{ name: "valor", type: "DECIMAL" },{ name: "data_venda", type: "DATE" }] }
+    ],
+    hint: "Use <strong>JOIN</strong> + <strong>WHERE</strong> para filtrar o mês (BETWEEN '2024-03-01' AND '2024-03-31'), <strong>GROUP BY</strong> no funcionário, <strong>ORDER BY</strong> total DESC e <strong>LIMIT 5</strong>.",
+    result: [{ nome: "Roberto Silva", total_vendido: 45200.00 },{ nome: "Julia Ferreira", total_vendido: 38900.50 },{ nome: "Diego Santos", total_vendido: 32100.00 },{ nome: "Mariana Alves", total_vendido: 28750.25 },{ nome: "Paulo Mendes", total_vendido: 24300.00 }]
+  },
+  {
+    id: 7,
+    title: "Clientes sem pedidos",
+    desc: "Encontre todos os clientes que nunca fizeram nenhum pedido. Retorne apenas o nome e o email deles.",
+    difficulty: "medium",
+    topic: "LEFT JOIN + IS NULL",
+    xp: 150,
+    schema: [
+      { name: "clientes", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "email", type: "VARCHAR" }] },
+      { name: "pedidos", cols: [{ name: "id", type: "INT", pk: true },{ name: "cliente_id", type: "INT" },{ name: "valor", type: "DECIMAL" }] }
+    ],
+    hint: "Use <strong>LEFT JOIN</strong> de clientes para pedidos. Quando um cliente não tem pedido, a coluna pedidos.id será NULL. Filtre com <strong>WHERE pedidos.id IS NULL</strong>.",
+    result: [{ nome: "Fernando Gomes", email: "fernando@email.com" },{ nome: "Camila Torres", email: "camila@email.com" },{ nome: "Lucas Pinto", email: "lucas@email.com" }]
+  },
+  {
+    id: 8,
+    title: "Média de vendas por categoria",
+    desc: "Calcule a média de vendas para cada categoria de produto. Mostre apenas categorias com média acima de R$ 500, ordenadas da maior para a menor.",
+    difficulty: "medium",
+    topic: "GROUP BY + HAVING + AVG",
+    xp: 150,
+    schema: [
+      { name: "categorias", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" }] },
+      { name: "produtos", cols: [{ name: "id", type: "INT", pk: true },{ name: "cat_id", type: "INT" },{ name: "nome", type: "VARCHAR" }] },
+      { name: "pedido_itens", cols: [{ name: "id", type: "INT", pk: true },{ name: "produto_id", type: "INT" },{ name: "valor", type: "DECIMAL" },{ name: "qtd", type: "INT" }] }
+    ],
+    hint: "Faça JOIN entre categorias → produtos → pedido_itens. Use <strong>AVG(valor)</strong> para a média, <strong>GROUP BY</strong> na categoria e <strong>HAVING AVG(valor) > 500</strong>.",
+    result: [{ categoria: "Eletrônicos", media_valor: 1850.00 },{ categoria: "Móveis", media_valor: 920.75 },{ categoria: "Eletrodomésticos", media_valor: 680.50 }]
+  },
+  {
+    id: 9,
+    title: "Segundo maior salário",
+    desc: "Encontre o segundo maior salário entre todos os funcionários. Retorne apenas o valor do salário.",
+    difficulty: "medium",
+    topic: "Subquery + MAX",
+    xp: 150,
+    schema: [
+      { name: "funcionarios", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "salario", type: "DECIMAL" },{ name: "depto", type: "VARCHAR" }] }
+    ],
+    hint: "Use uma <strong>subquery</strong>: SELECT MAX(salario) FROM funcionarios WHERE salario < (SELECT MAX(salario) FROM funcionarios). Ou use <strong>ORDER BY salario DESC LIMIT 1 OFFSET 1</strong>.",
+    result: [{ segundo_maior_salario: 18500.00 }]
+  },
+  {
+    id: 10,
+    title: "Produtos mais vendidos por categoria",
+    desc: "Para cada categoria, encontre o produto mais vendido (por quantidade total). Retorne categoria, produto e quantidade total.",
+    difficulty: "medium",
+    topic: "JOIN + GROUP BY + MAX",
+    xp: 150,
+    schema: [
+      { name: "categorias", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" }] },
+      { name: "produtos", cols: [{ name: "id", type: "INT", pk: true },{ name: "cat_id", type: "INT" },{ name: "nome", type: "VARCHAR" }] },
+      { name: "vendas_itens", cols: [{ name: "produto_id", type: "INT" },{ name: "quantidade", type: "INT" }] }
+    ],
+    hint: "Agrupe por categoria e produto, some as quantidades, depois use uma subquery ou <strong>HAVING</strong> para pegar o máximo por categoria.",
+    result: [{ categoria: "Eletrônicos", produto: "iPhone 15", qtd_total: 342 },{ categoria: "Móveis", produto: "Cadeira Office", qtd_total: 218 },{ categoria: "Livros", produto: "Clean Code", qtd_total: 189 }]
+  },
+
+  // ---- MÉDIOS-AVANÇADOS ----
+  {
+    id: 11,
+    title: "CASE WHEN: Classificar pedidos",
+    desc: "Classifique cada pedido por faixa de valor: 'Pequeno' (< R$100), 'Médio' (R$100–R$999), 'Grande' (>= R$1000). Retorne o id, valor e a classificação.",
+    difficulty: "medium",
+    topic: "CASE WHEN",
+    xp: 150,
+    schema: [
+      { name: "pedidos", cols: [{ name: "id", type: "INT", pk: true },{ name: "cliente_id", type: "INT" },{ name: "valor", type: "DECIMAL" },{ name: "status", type: "VARCHAR" }] }
+    ],
+    hint: "Use <strong>CASE WHEN valor < 100 THEN 'Pequeno' WHEN valor < 1000 THEN 'Médio' ELSE 'Grande' END AS classificacao</strong> no SELECT.",
+    result: [{ id: 101, valor: 45.00, classificacao: "Pequeno" },{ id: 102, valor: 580.00, classificacao: "Médio" },{ id: 103, valor: 2100.00, classificacao: "Grande" }]
+  },
+  {
+    id: 12,
+    title: "Taxa de conversão por vendedor",
+    desc: "Calcule a taxa de conversão de cada vendedor: total de vendas fechadas dividido pelo total de oportunidades, em porcentagem. Mostre apenas os com taxa > 30%.",
+    difficulty: "medium",
+    topic: "CASE WHEN + Cálculo",
+    xp: 150,
+    schema: [
+      { name: "vendedores", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" }] },
+      { name: "oportunidades", cols: [{ name: "id", type: "INT", pk: true },{ name: "vendedor_id", type: "INT" },{ name: "status", type: "VARCHAR" },{ name: "valor", type: "DECIMAL" }] }
+    ],
+    hint: "Use <strong>COUNT(CASE WHEN status = 'fechado' THEN 1 END)</strong> para contar fechados, divida pelo <strong>COUNT(*)</strong> total e multiplique por 100. Filtre com <strong>HAVING</strong>.",
+    result: [{ nome: "Ana Lima", taxa_conversao: 52.30 },{ nome: "Carlos Mota", taxa_conversao: 41.80 },{ nome: "Paula Reis", taxa_conversao: 33.50 }]
+  },
+  {
+    id: 13,
+    title: "Clientes com múltiplos pedidos no mesmo dia",
+    desc: "Encontre clientes que fizeram mais de 1 pedido no mesmo dia. Retorne o nome do cliente, a data e a quantidade de pedidos naquele dia.",
+    difficulty: "medium",
+    topic: "GROUP BY + HAVING + DATE",
+    xp: 150,
+    schema: [
+      { name: "clientes", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" }] },
+      { name: "pedidos", cols: [{ name: "id", type: "INT", pk: true },{ name: "cliente_id", type: "INT" },{ name: "valor", type: "DECIMAL" },{ name: "criado_em", type: "DATETIME" }] }
+    ],
+    hint: "Agrupe por <strong>cliente_id, DATE(criado_em)</strong> e use <strong>HAVING COUNT(*) > 1</strong>. Depois faça JOIN com clientes para pegar o nome.",
+    result: [{ nome: "Beatriz Costa", data: "2024-03-15", qtd_pedidos: 3 },{ nome: "Lucas Pinto", data: "2024-03-20", qtd_pedidos: 2 }]
+  },
+
+  // ---- DIFÍCEIS ----
+  {
+    id: 14,
+    title: "CTE: Receita acumulada mensal",
+    desc: "Usando CTE, calcule a receita mensal e a receita acumulada (running total) ao longo de 2024. Retorne mês, receita do mês e receita acumulada.",
+    difficulty: "hard",
+    topic: "CTE + Window Function",
+    xp: 200,
+    schema: [
+      { name: "pedidos", cols: [{ name: "id", type: "INT", pk: true },{ name: "valor", type: "DECIMAL" },{ name: "criado_em", type: "DATE" },{ name: "status", type: "VARCHAR" }] }
+    ],
+    hint: "Crie uma CTE com receita por mês usando <strong>DATE_FORMAT(criado_em, '%Y-%m')</strong>, depois use <strong>SUM() OVER (ORDER BY mes)</strong> para o acumulado.",
+    result: [{ mes: "2024-01", receita_mes: 45200.00, receita_acumulada: 45200.00 },{ mes: "2024-02", receita_mes: 62100.00, receita_acumulada: 107300.00 },{ mes: "2024-03", receita_mes: 58900.00, receita_acumulada: 166200.00 }]
+  },
+  {
+    id: 15,
+    title: "ROW_NUMBER: Ranking de clientes por cidade",
+    desc: "Crie um ranking dos clientes que mais gastaram dentro de cada cidade. Retorne cidade, nome do cliente, total gasto e sua posição no ranking da cidade.",
+    difficulty: "hard",
+    topic: "Window Function: ROW_NUMBER",
+    xp: 200,
+    schema: [
+      { name: "clientes", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "cidade", type: "VARCHAR" }] },
+      { name: "pedidos", cols: [{ name: "id", type: "INT", pk: true },{ name: "cliente_id", type: "INT" },{ name: "valor", type: "DECIMAL" }] }
+    ],
+    hint: "Use <strong>ROW_NUMBER() OVER (PARTITION BY cidade ORDER BY SUM(valor) DESC)</strong> após agrupar por cliente e cidade.",
+    result: [{ cidade: "São Paulo", nome: "Ana Souza", total: 8200.00, ranking: 1 },{ cidade: "São Paulo", nome: "Pedro Lima", total: 6100.00, ranking: 2 },{ cidade: "Curitiba", nome: "Mariana Alves", total: 4900.00, ranking: 1 }]
+  },
+  {
+    id: 16,
+    title: "LAG: Crescimento de vendas mês a mês",
+    desc: "Calcule o crescimento percentual das vendas em relação ao mês anterior para cada mês de 2024. Retorne mês, total de vendas, total anterior e % de crescimento.",
+    difficulty: "hard",
+    topic: "Window Function: LAG",
+    xp: 200,
+    schema: [
+      { name: "vendas", cols: [{ name: "id", type: "INT", pk: true },{ name: "valor", type: "DECIMAL" },{ name: "data_venda", type: "DATE" }] }
+    ],
+    hint: "Use <strong>LAG(total_mes) OVER (ORDER BY mes)</strong> para acessar o valor do mês anterior. O crescimento é <strong>((atual - anterior) / anterior) * 100</strong>.",
+    result: [{ mes: "2024-01", total: 45200.00, anterior: null, crescimento_pct: null },{ mes: "2024-02", total: 62100.00, anterior: 45200.00, crescimento_pct: 37.39 },{ mes: "2024-03", total: 58900.00, anterior: 62100.00, crescimento_pct: -5.15 }]
+  },
+  {
+    id: 17,
+    title: "Self JOIN: Hierarquia de funcionários",
+    desc: "Liste cada funcionário e o nome de seu gerente direto. Funcionários sem gerente devem aparecer com 'Sem gerente'. Ordene pelo nome do funcionário.",
+    difficulty: "hard",
+    topic: "Self JOIN + COALESCE",
+    xp: 200,
+    schema: [
+      { name: "funcionarios", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "gerente_id", type: "INT" },{ name: "cargo", type: "VARCHAR" }] }
+    ],
+    hint: "Faça um <strong>Self JOIN</strong>: FROM funcionarios f LEFT JOIN funcionarios g ON f.gerente_id = g.id. Use <strong>COALESCE(g.nome, 'Sem gerente')</strong> para tratar nulos.",
+    result: [{ funcionario: "Ana Lima", gerente: "Carlos Diretor" },{ funcionario: "Carlos Diretor", gerente: "Sem gerente" },{ funcionario: "Pedro Santos", gerente: "Ana Lima" }]
+  },
+  {
+    id: 18,
+    title: "UNION: Relatório consolidado",
+    desc: "Crie um relatório unindo clientes PF e clientes PJ em uma única lista. Retorne tipo ('PF' ou 'PJ'), nome e cidade, ordenados por nome.",
+    difficulty: "hard",
+    topic: "UNION ALL",
+    xp: 200,
+    schema: [
+      { name: "clientes_pf", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "cpf", type: "CHAR(11)" },{ name: "cidade", type: "VARCHAR" }] },
+      { name: "clientes_pj", cols: [{ name: "id", type: "INT", pk: true },{ name: "razao_social", type: "VARCHAR" },{ name: "cnpj", type: "CHAR(14)" },{ name: "cidade", type: "VARCHAR" }] }
+    ],
+    hint: "Use <strong>UNION ALL</strong>: SELECT 'PF' AS tipo, nome, cidade FROM clientes_pf UNION ALL SELECT 'PJ', razao_social, cidade FROM clientes_pj. Envolva em subquery para ordenar.",
+    result: [{ tipo: "PF", nome: "Ana Souza", cidade: "São Paulo" },{ tipo: "PJ", nome: "Beta Comércio Ltda", cidade: "Curitiba" },{ tipo: "PF", nome: "Carlos Lima", cidade: "Rio de Janeiro" }]
+  },
+  {
+    id: 19,
+    title: "Detecção de duplicatas",
+    desc: "Encontre registros duplicados na tabela de clientes (mesmo nome E mesmo email). Retorne o email, o nome e quantas vezes aparecem.",
+    difficulty: "hard",
+    topic: "GROUP BY + HAVING + COUNT",
+    xp: 200,
+    schema: [
+      { name: "clientes", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "email", type: "VARCHAR" },{ name: "criado_em", type: "DATETIME" }] }
+    ],
+    hint: "Agrupe por <strong>nome, email</strong> e use <strong>HAVING COUNT(*) > 1</strong> para encontrar grupos com mais de uma ocorrência.",
+    result: [{ email: "joao@email.com", nome: "João Silva", ocorrencias: 3 },{ email: "maria@gmail.com", nome: "Maria Costa", ocorrencias: 2 }]
+  },
+  {
+    id: 20,
+    title: "CTE Recursiva: Hierarquia completa",
+    desc: "Use uma CTE recursiva para listar toda a cadeia hierárquica de um funcionário até o CEO. Para o funcionário de id=5, mostre cada nível da hierarquia e o nome.",
+    difficulty: "hard",
+    topic: "CTE Recursiva",
+    xp: 300,
+    schema: [
+      { name: "funcionarios", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "gerente_id", type: "INT" },{ name: "cargo", type: "VARCHAR" }] }
+    ],
+    hint: "Use <strong>WITH RECURSIVE</strong>: o anchor seleciona o funcionário id=5, o recursive JOIN une com funcionarios WHERE id = gerente_id do nível anterior. Adicione um contador de nível.",
+    result: [{ nivel: 0, nome: "Pedro Analista", cargo: "Analista" },{ nivel: 1, nome: "Ana Lima", cargo: "Gerente" },{ nivel: 2, nome: "Carlos CEO", cargo: "CEO" }]
+  }
+];
+
+// ===== STATE =====
+let state = {
+  current: 0,
+  correct: 0,
+  xp: 0,
+  streak: 0,
+  hintUsed: false,
+};
+
+// ===== RENDER CHALLENGE =====
+function renderChallenge() {
+  const ch = CHALLENGES[state.current];
+  state.hintUsed = false;
+
+  document.getElementById('challenge-number').textContent = `Desafio ${state.current + 1} de ${CHALLENGES.length}`;
+  document.getElementById('challenge-title').textContent = ch.title;
+  document.getElementById('challenge-desc').textContent = ch.desc;
+  document.getElementById('query-editor').value = '';
+
+  // Meta tags
+  const diffClass = { easy: 'tag-difficulty-easy', medium: 'tag-difficulty-medium', hard: 'tag-difficulty-hard' }[ch.difficulty];
+  const diffLabel = { easy: '🟢 Fácil', medium: '🟡 Médio', hard: '🔴 Difícil' }[ch.difficulty];
+  document.getElementById('challenge-meta').innerHTML = `
+    <span class="tag ${diffClass}">${diffLabel}</span>
+    <span class="tag tag-topic">${ch.topic}</span>
+    <span class="tag tag-topic">+${ch.xp} XP</span>
+  `;
+
+  // Schema
+  let schemaHtml = '';
+  ch.schema.forEach(table => {
+    schemaHtml += `<div class="table-schema">
+      <div class="table-schema-header"><span class="table-icon">🗃️</span>${table.name}</div>
+      <div class="table-schema-body">
+        ${table.cols.map(c => `
+          <div class="col-row">
+            <span class="col-name">${c.name}</span>
+            <span class="col-type">${c.type}</span>
+            ${c.pk ? '<span class="col-pk">PK</span>' : ''}
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  });
+  document.getElementById('schema-tables').innerHTML = schemaHtml;
+
+  // Reset feedback
+  document.getElementById('feedback-panel').style.display = 'none';
+  document.getElementById('hint-box').style.display = 'none';
+  document.getElementById('btn-run').disabled = false;
+  const backBtn = document.getElementById('btn-back');
+  if (backBtn) backBtn.disabled = state.current === 0;
+
+  // Progress
+  const pct = (state.current / CHALLENGES.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${state.current} / ${CHALLENGES.length} desafios`;
+
+  // Streak dots
+  for (let i = 1; i <= 20; i++) {
+    const dot = document.getElementById(`dot-${i}`);
+    dot.className = 'streak-dot';
+    if (i < state.current + 1) { dot.className = 'streak-dot active'; dot.textContent = '✓'; }
+    else if (i === state.current + 1) { dot.className = 'streak-dot current'; dot.textContent = '⚡'; }
+    else { dot.textContent = '○'; }
+  }
+}
+
+// ===== SHOW HINT =====
+function showHint() {
+  const ch = CHALLENGES[state.current];
+  const hintBox = document.getElementById('hint-box');
+  hintBox.innerHTML = `💡 <strong>Dica:</strong> ${ch.hint}`;
+  hintBox.style.display = 'block';
+  state.hintUsed = true;
+}
+
+// ===== SQL VALIDATOR (local, sem API) =====
+function normalizeSQL(q) {
+  return q.toLowerCase().replace(/\s+/g, ' ').replace(/[`"]/g, '').trim();
+}
+
+function hasKeywords(q, keywords) {
+  const n = normalizeSQL(q);
+  return keywords.every(kw => n.includes(kw.toLowerCase()));
+}
+
+function evaluateQuery(query, ch) {
+  const n = normalizeSQL(query);
+  const hints = ch.hint.replace(/<[^>]+>/g, '').toLowerCase();
+  let score = 0;
+  let issues = [];
+  let tips = [];
+
+  // Must have SELECT
+  if (!n.includes('select')) {
+    return { correct: false, score: 0, explanation: "Sua query precisa começar com SELECT.", optimization: "Toda query começa com SELECT.", encouragement: "Comece pelo básico: SELECT ... FROM ..." };
+  }
+  score += 10;
+
+  // Check topic-specific keywords
+  const topic = ch.topic.toLowerCase();
+
+  if (topic.includes('join') || topic.includes('null')) {
+    if (n.includes('join')) score += 20; else issues.push("JOIN entre tabelas");
+    if (topic.includes('left') && n.includes('left join')) score += 15; else if (topic.includes('left')) issues.push("LEFT JOIN (não INNER JOIN)");
+    if (topic.includes('null') && n.includes('is null')) score += 15; else if (topic.includes('null')) issues.push("IS NULL para filtrar");
+  }
+
+  if (topic.includes('sum') || topic.includes('agregação') || topic.includes('avg') || topic.includes('having')) {
+    if (n.includes('group by')) score += 20; else issues.push("GROUP BY para agrupar");
+    if (n.includes('having')) score += 15; else if (topic.includes('having')) issues.push("HAVING para filtrar grupos");
+    if (n.includes('sum(') || n.includes('avg(') || n.includes('count(')) score += 15; else issues.push("Função de agregação (SUM, AVG ou COUNT)");
+  }
+
+  if (topic.includes('count')) {
+    if (n.includes('count(')) score += 25; else issues.push("COUNT() para contar registros");
+    if (n.includes('group by')) score += 20; else issues.push("GROUP BY para agrupar por campo");
+  }
+
+  if (topic.includes('limit') || topic.includes('order')) {
+    if (n.includes('order by')) score += 20; else issues.push("ORDER BY para ordenar");
+    if (n.includes('limit')) score += 15; else if (topic.includes('limit')) issues.push("LIMIT para limitar resultados");
+  }
+
+  if (topic.includes('case')) {
+    if (n.includes('case') && n.includes('when') && n.includes('then')) score += 35; else issues.push("CASE WHEN ... THEN ... END");
+  }
+
+  if (topic.includes('subquery') || topic.includes('max')) {
+    if (n.includes('select') && (n.split('select').length > 2 || n.includes('max('))) score += 30; else issues.push("Subquery ou MAX()");
+  }
+
+  if (topic.includes('cte') || topic.includes('with')) {
+    if (n.includes('with') && n.includes('as')) score += 40; else issues.push("WITH ... AS (CTE)");
+    if (topic.includes('recursiv') && n.includes('recursive')) score += 20; else if (topic.includes('recursiv')) issues.push("WITH RECURSIVE");
+  }
+
+  if (topic.includes('window') || topic.includes('row_number') || topic.includes('lag') || topic.includes('rank')) {
+    if (n.includes('over') && n.includes('(')) score += 35; else issues.push("Window Function com OVER()");
+    if (n.includes('partition by')) score += 15; else if (topic.includes('row_number') || topic.includes('rank')) issues.push("PARTITION BY para particionar");
+    if (topic.includes('lag') && n.includes('lag(')) score += 15; else if (topic.includes('lag')) issues.push("Função LAG()");
+  }
+
+  if (topic.includes('self join')) {
+    if (n.split('join').length > 2 || (n.includes('join') && n.match(/from (\w+) (\w+).*join \1/))) score += 30;
+    else issues.push("Self JOIN (mesma tabela com alias diferente)");
+    if (n.includes('coalesce') || n.includes('ifnull') || n.includes('isnull')) score += 15; else issues.push("COALESCE para tratar valores nulos");
+  }
+
+  if (topic.includes('union')) {
+    if (n.includes('union')) score += 40; else issues.push("UNION ou UNION ALL para combinar resultados");
+  }
+
+  if (topic.includes('distinct')) {
+    if (n.includes('distinct')) score += 30; else issues.push("DISTINCT para valores únicos");
+  }
+
+  if (topic.includes('date')) {
+    if (n.includes('date') || n.includes('interval') || n.includes('now()') || n.includes('between')) score += 25;
+    else issues.push("Filtro de data (BETWEEN, NOW(), INTERVAL)");
+  }
+
+  // FROM clause check
+  if (n.includes('from')) score += 5;
+
+  // Penalize if SELECT * with no conditions on complex topics
+  if (n === 'select * from ' + (ch.schema[0]?.name || '') && score < 40) score = 15;
+
+  // Cap score
+  score = Math.min(score, 100);
+
+  // Build explanation
+  let explanation = '';
+  let optimization = '';
+
+  if (score >= 85) {
+    explanation = "Excelente! Sua query tem a estrutura correta e usa as cláusulas certas para resolver o problema.";
+    optimization = "Considere adicionar aliases descritivos (AS) para tornar o resultado mais legível.";
+  } else if (score >= 60) {
+    explanation = `Boa tentativa! Sua query está no caminho certo, mas está faltando: ${issues.slice(0,2).join(', ')}.`;
+    optimization = `Dica: ${ch.hint.replace(/<[^>]+>/g, '')}`;
+  } else if (score >= 30) {
+    explanation = `Sua query precisa de alguns ajustes. Elementos faltando: ${issues.slice(0,3).join(', ')}.`;
+    optimization = `Dica: ${ch.hint.replace(/<[^>]+>/g, '')}`;
+  } else {
+    explanation = `A query está incompleta. Para este desafio você precisa de: ${issues.slice(0,3).join(', ')}.`;
+    optimization = `Dica: ${ch.hint.replace(/<[^>]+>/g, '')}`;
+  }
+
+  const encouragements = {
+    high: ["🔥 Arrasou! Continue assim!", "💪 Quase perfeito!", "🚀 Você manda bem em SQL!"],
+    mid: ["💡 Está quase lá!", "🧠 Boa lógica, ajuste os detalhes!", "📈 Progredindo bem!"],
+    low: ["🌱 Todo expert já foi iniciante!", "💪 Não desista, você consegue!", "🎯 Analise a dica e tente de novo!"]
+  };
+  const enc = score >= 80 ? encouragements.high : score >= 50 ? encouragements.mid : encouragements.low;
+  const encouragement = enc[Math.floor(Math.random() * enc.length)];
+
+  // Build correct query hint
+  const correctExamples = {
+    "JOIN": `SELECT c.nome, SUM(p.valor) AS total_gasto\nFROM clientes c\nJOIN pedidos p ON c.id = p.cliente_id\nGROUP BY c.id, c.nome\nHAVING SUM(p.valor) > 1000\nORDER BY total_gasto DESC`,
+    "LEFT JOIN + IS NULL": `SELECT c.nome, c.email\nFROM clientes c\nLEFT JOIN pedidos p ON c.id = p.cliente_id\nWHERE p.id IS NULL`,
+    "CASE WHEN": `SELECT id, valor,\n  CASE\n    WHEN valor < 100 THEN 'Pequeno'\n    WHEN valor < 1000 THEN 'Médio'\n    ELSE 'Grande'\n  END AS classificacao\nFROM pedidos`,
+    "CTE Recursiva": `WITH RECURSIVE hierarquia AS (\n  SELECT id, nome, gerente_id, cargo, 0 AS nivel\n  FROM funcionarios WHERE id = 5\n  UNION ALL\n  SELECT f.id, f.nome, f.gerente_id, f.cargo, h.nivel + 1\n  FROM funcionarios f\n  JOIN hierarquia h ON f.id = h.gerente_id\n)\nSELECT nivel, nome, cargo FROM hierarquia`,
+    "Window Function: LAG": `WITH vendas_mes AS (\n  SELECT DATE_FORMAT(data_venda, '%Y-%m') AS mes, SUM(valor) AS total\n  FROM vendas GROUP BY mes\n)\nSELECT mes, total,\n  LAG(total) OVER (ORDER BY mes) AS anterior,\n  ROUND((total - LAG(total) OVER (ORDER BY mes)) / LAG(total) OVER (ORDER BY mes) * 100, 2) AS crescimento_pct\nFROM vendas_mes`,
+  };
+
+  const correct_query = correctExamples[ch.topic] || `-- Consulte a dica acima para montar a query correta!\n-- Tópico: ${ch.topic}`;
+
+  return {
+    correct: score >= 85,
+    score,
+    explanation,
+    optimization,
+    correct_query,
+    encouragement
+  };
+}
+
+// ===== RUN QUERY =====
+function runQuery() {
+  const query = document.getElementById('query-editor').value.trim();
+  if (!query) {
+    alert('Escreva uma query antes de executar!');
+    return;
+  }
+
+  const ch = CHALLENGES[state.current];
+  const btn = document.getElementById('btn-run');
+  const spinner = document.getElementById('spinner');
+  const loadingBar = document.getElementById('loading-bar');
+
+  btn.disabled = true;
+  spinner.style.display = 'block';
+  loadingBar.style.display = 'block';
+  document.getElementById('feedback-panel').style.display = 'none';
+
+  // Simulate a small delay for UX
+  setTimeout(() => {
+    try {
+      const result = evaluateQuery(query, ch);
+      showFeedback(result, ch);
+
+      if (result.correct || result.score >= 70) {
+        state.correct++;
+        const xpEarned = state.hintUsed ? Math.floor(ch.xp * 0.6) : ch.xp;
+        state.xp += xpEarned;
+        state.streak++;
+        updateStats();
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao avaliar a query. Tente novamente.');
+    } finally {
+      btn.disabled = false;
+      spinner.style.display = 'none';
+      loadingBar.style.display = 'none';
+    }
+  }, 800);
+}
+
+// ===== SHOW FEEDBACK =====
+function showFeedback(result, ch) {
+  const panel = document.getElementById('feedback-panel');
+  const header = document.getElementById('feedback-header');
+  const icon = document.getElementById('feedback-icon');
+  const title = document.getElementById('feedback-title');
+  const subtitle = document.getElementById('feedback-subtitle');
+  const body = document.getElementById('feedback-body');
+
+  const isCorrect = result.correct || result.score >= 70;
+  const cls = isCorrect ? 'correct' : 'wrong';
+
+  header.className = `feedback-header ${cls}`;
+  icon.className = `feedback-icon ${cls}`;
+  icon.textContent = isCorrect ? '✓' : '✗';
+  title.className = `feedback-title ${cls}`;
+  title.textContent = isCorrect ? (result.score === 100 ? '🎉 Perfeito!' : '✅ Muito bom!') : '❌ Não foi dessa vez';
+  subtitle.textContent = result.encouragement || '';
+
+  // Build result rows
+  let tableRows = ch.result.map(row => {
+    const cols = Object.keys(row);
+    return `<tr>${cols.map(k => `<td>${row[k]}</td>`).join('')}</tr>`;
+  }).join('');
+  const tableCols = Object.keys(ch.result[0]);
+  const tableHead = tableCols.map(k => `<th>${k}</th>`).join('');
+
+  body.innerHTML = `
+    <div class="feedback-section">
+      <div class="feedback-section-label">📊 Análise</div>
+      <div class="feedback-text">${result.explanation}</div>
+    </div>
+
+    <div class="feedback-section">
+      <div class="feedback-section-label">✅ Resultado esperado</div>
+      <div class="result-table-wrap">
+        <table class="result-table">
+          <thead><tr>${tableHead}</tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    ${!isCorrect ? `
+    <div class="feedback-section">
+      <div class="feedback-section-label">💡 Query correta</div>
+      <pre class="feedback-code">${result.correct_query}</pre>
+    </div>
+    ` : ''}
+
+    <div class="feedback-section">
+      <div class="feedback-section-label">⚡ Dica de otimização</div>
+      <div class="feedback-text" style="color: var(--muted)">${result.optimization}</div>
+    </div>
+
+    ${state.current < CHALLENGES.length - 1 ? `
+      <button class="btn-next" onclick="nextChallenge()">
+        Próximo Desafio →
+      </button>
+    ` : `
+      <button class="btn-next" onclick="showFinal()">
+        🏆 Ver Resultado Final
+      </button>
+    `}
+  `;
+
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ===== PREV CHALLENGE =====
+function prevChallenge() {
+  if (state.current > 0) {
+    state.current--;
+    renderChallenge();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+// ===== NEXT CHALLENGE =====
+function nextChallenge() {
+  if (state.current < CHALLENGES.length - 1) {
+    state.current++;
+    renderChallenge();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+// ===== FINAL SCREEN =====
+function showFinal() {
+  document.querySelector('.challenge-card').innerHTML = `
+    <div style="text-align:center; padding: 40px 20px;">
+      <div style="font-size: 60px; margin-bottom: 20px;">🏆</div>
+      <div style="font-size: 28px; font-weight: 800; margin-bottom: 10px;">Treino Completo!</div>
+      <div style="color: var(--muted); margin-bottom: 30px; font-size: 15px;">Você completou todos os ${CHALLENGES.length} desafios de SQL</div>
+      <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px;">
+        <div style="text-align:center">
+          <div style="font-size: 36px; font-weight: 700; color: var(--green); font-family: var(--mono)">${state.correct}</div>
+          <div style="font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em">Corretas</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size: 36px; font-weight: 700; color: var(--yellow); font-family: var(--mono)">${state.xp}</div>
+          <div style="font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em">XP Ganhos</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size: 36px; font-weight: 700; color: var(--accent); font-family: var(--mono)">${Math.round((state.correct/CHALLENGES.length)*100)}%</div>
+          <div style="font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em">Aproveitamento</div>
+        </div>
+      </div>
+      <button class="btn-run" style="margin: 0 auto" onclick="resetGame()">
+        <span>🔄</span> Jogar Novamente
+      </button>
+    </div>
+  `;
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('progress-label').textContent = `${CHALLENGES.length} / ${CHALLENGES.length} desafios`;
+  document.getElementById('feedback-panel').style.display = 'none';
+}
+
+// ===== RESET =====
+function resetGame() {
+  state = { current: 0, correct: 0, xp: 0, streak: 0, hintUsed: false };
+  updateStats();
+  renderChallenge();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ===== UPDATE STATS =====
+function updateStats() {
+  document.getElementById('stat-correct').textContent = state.correct;
+  document.getElementById('stat-xp').textContent = state.xp;
+  document.getElementById('stat-streak').textContent = state.streak;
+}
+
+// ===== TAB KEY =====
+document.addEventListener('DOMContentLoaded', () => {
+  const editor = document.getElementById('query-editor');
+  editor.addEventListener('keydown', function(e) {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const start = this.selectionStart;
+      const end = this.selectionEnd;
+      this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+      this.selectionStart = this.selectionEnd = start + 2;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      runQuery();
+    }
+  });
+
+  renderChallenge();
+});
+</script>
+</body>
+</html>
