@@ -836,284 +836,375 @@ SELECT ..."></textarea>
 <script>
 // ===== CHALLENGES DATA =====
 const CHALLENGES = [
-  // ---- FÁCEIS ----
   {
-    id: 1,
-    title: "Clientes de alto valor",
+    id: 1, title: "Clientes de alto valor",
     desc: "Liste os clientes que realizaram pedidos com valor total acima de R$ 1.000. Retorne o nome do cliente e o valor total gasto, ordenados do maior para o menor.",
-    difficulty: "easy",
-    topic: "JOIN + SUM + HAVING",
-    xp: 100,
+    difficulty: "easy", topic: "JOIN + SUM + HAVING", xp: 100,
     schema: [
       { name: "clientes", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "email", type: "VARCHAR" },{ name: "cidade", type: "VARCHAR" }] },
       { name: "pedidos", cols: [{ name: "id", type: "INT", pk: true },{ name: "cliente_id", type: "INT" },{ name: "valor", type: "DECIMAL" },{ name: "data", type: "DATE" }] }
     ],
     hint: "Use <strong>JOIN</strong> para unir as tabelas, <strong>SUM()</strong> para somar os valores por cliente, <strong>GROUP BY</strong> para agrupar e <strong>HAVING</strong> para filtrar grupos com soma > 1000.",
-    result: [{ nome: "Ana Souza", total_gasto: 3420.50 },{ nome: "Carlos Lima", total_gasto: 2180.00 },{ nome: "Beatriz Costa", total_gasto: 1550.75 }]
+    result: [{ nome: "Ana Souza", total_gasto: 3420.50 },{ nome: "Carlos Lima", total_gasto: 2180.00 },{ nome: "Beatriz Costa", total_gasto: 1550.75 }],
+    validation: [
+      { keywords: ["join"], points: 20, label: "JOIN entre tabelas" },
+      { keywords: ["sum("], points: 20, label: "SUM() para somar valores" },
+      { keywords: ["group by"], points: 20, label: "GROUP BY para agrupar" },
+      { keywords: ["having"], points: 15, label: "HAVING para filtrar grupos" },
+      { keywords: ["order by"], points: 5, label: "ORDER BY para ordenar" }
+    ],
+    optimizationTip: "Use aliases descritivos: SUM(p.valor) AS total_gasto para deixar o resultado claro.",
+    correctQuery: "SELECT c.nome, SUM(p.valor) AS total_gasto\nFROM clientes c\nJOIN pedidos p ON c.id = p.cliente_id\nGROUP BY c.id, c.nome\nHAVING SUM(p.valor) > 1000\nORDER BY total_gasto DESC"
   },
   {
-    id: 2,
-    title: "Produtos sem estoque",
+    id: 2, title: "Produtos sem estoque",
     desc: "Encontre todos os produtos que têm estoque zerado (quantidade = 0) e estão ativos. Retorne o nome do produto e a categoria.",
-    difficulty: "easy",
-    topic: "WHERE + AND",
-    xp: 100,
+    difficulty: "easy", topic: "WHERE + AND", xp: 100,
     schema: [
       { name: "produtos", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "categoria", type: "VARCHAR" },{ name: "quantidade", type: "INT" },{ name: "ativo", type: "BOOLEAN" }] }
     ],
     hint: "Use <strong>WHERE</strong> com duas condições: quantidade = 0 E ativo = true. Use <strong>AND</strong> para combinar as condições.",
-    result: [{ nome: "Notebook Pro", categoria: "Eletrônicos" },{ nome: "Cadeira Gamer", categoria: "Móveis" }]
+    result: [{ nome: "Notebook Pro", categoria: "Eletrônicos" },{ nome: "Cadeira Gamer", categoria: "Móveis" }],
+    validation: [
+      { keywords: ["where"], points: 25, label: "WHERE para filtrar" },
+      { keywords: [["quantidade", "0"], ["quantidade=0"], ["quantidade =0"], ["quantidade= 0"]], points: 25, label: "filtro quantidade = 0" },
+      { keywords: [["ativo", "true"], ["ativo", "1"], ["ativo=true"], ["ativo =true"]], points: 25, label: "filtro ativo = true" },
+      { keywords: ["and"], points: 5, label: "AND para combinar condições" }
+    ],
+    optimizationTip: "Índices em colunas usadas no WHERE (quantidade, ativo) aceleram muito a busca em tabelas grandes.",
+    correctQuery: "SELECT nome, categoria\nFROM produtos\nWHERE quantidade = 0 AND ativo = true"
   },
   {
-    id: 3,
-    title: "Emails únicos de clientes",
+    id: 3, title: "Emails únicos de clientes",
     desc: "Liste todos os domínios de email distintos cadastrados na tabela de clientes (ex: gmail.com, hotmail.com). Ordene alfabeticamente.",
-    difficulty: "easy",
-    topic: "DISTINCT + LIKE",
-    xp: 100,
+    difficulty: "easy", topic: "DISTINCT + LIKE", xp: 100,
     schema: [
       { name: "clientes", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "email", type: "VARCHAR" },{ name: "ativo", type: "BOOLEAN" }] }
     ],
     hint: "Use <strong>DISTINCT</strong> e a função <strong>SUBSTRING_INDEX(email, '@', -1)</strong> para extrair o domínio. Ordene com <strong>ORDER BY</strong>.",
-    result: [{ dominio: "gmail.com" },{ dominio: "hotmail.com" },{ dominio: "outlook.com" },{ dominio: "yahoo.com" }]
+    result: [{ dominio: "gmail.com" },{ dominio: "hotmail.com" },{ dominio: "outlook.com" },{ dominio: "yahoo.com" }],
+    validation: [
+      { keywords: ["distinct"], points: 30, label: "DISTINCT para valores únicos" },
+      { keywords: [["substring_index", "@"], ["substring", "@"], ["split_part", "@"]], points: 40, label: "extração do domínio após o @" },
+      { keywords: ["order by"], points: 10, label: "ORDER BY alfabético" }
+    ],
+    optimizationTip: "SUBSTRING_INDEX é eficiente para parsing de strings simples no MySQL. Em PostgreSQL use SPLIT_PART(email, '@', 2).",
+    correctQuery: "SELECT DISTINCT SUBSTRING_INDEX(email, '@', -1) AS dominio\nFROM clientes\nORDER BY dominio ASC"
   },
   {
-    id: 4,
-    title: "Contagem por cidade",
+    id: 4, title: "Contagem por cidade",
     desc: "Conte quantos clientes existem em cada cidade. Retorne a cidade e a contagem, ordenadas da cidade com mais clientes para a com menos.",
-    difficulty: "easy",
-    topic: "COUNT + GROUP BY",
-    xp: 100,
+    difficulty: "easy", topic: "COUNT + GROUP BY", xp: 100,
     schema: [
       { name: "clientes", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "cidade", type: "VARCHAR" },{ name: "estado", type: "CHAR(2)" }] }
     ],
     hint: "Use <strong>COUNT(*)</strong> para contar, <strong>GROUP BY cidade</strong> para agrupar por cidade e <strong>ORDER BY COUNT(*) DESC</strong> para ordenar.",
-    result: [{ cidade: "São Paulo", total: 142 },{ cidade: "Rio de Janeiro", total: 98 },{ cidade: "Curitiba", total: 54 },{ cidade: "Belo Horizonte", total: 47 }]
+    result: [{ cidade: "São Paulo", total: 142 },{ cidade: "Rio de Janeiro", total: 98 },{ cidade: "Curitiba", total: 54 }],
+    validation: [
+      { keywords: ["count("], points: 30, label: "COUNT() para contar" },
+      { keywords: ["group by"], points: 30, label: "GROUP BY cidade" },
+      { keywords: ["order by"], points: 15, label: "ORDER BY para ordenar" },
+      { keywords: ["desc"], points: 5, label: "DESC para maior primeiro" }
+    ],
+    optimizationTip: "COUNT(*) conta todas as linhas do grupo. COUNT(coluna) ignora NULLs — use o correto para cada situação.",
+    correctQuery: "SELECT cidade, COUNT(*) AS total\nFROM clientes\nGROUP BY cidade\nORDER BY total DESC"
   },
   {
-    id: 5,
-    title: "Pedidos do último mês",
+    id: 5, title: "Pedidos do último mês",
     desc: "Liste todos os pedidos realizados nos últimos 30 dias. Retorne o id do pedido, o nome do cliente e o valor, do mais recente para o mais antigo.",
-    difficulty: "easy",
-    topic: "WHERE + DATE",
-    xp: 100,
+    difficulty: "easy", topic: "WHERE + DATE", xp: 100,
     schema: [
       { name: "clientes", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" }] },
       { name: "pedidos", cols: [{ name: "id", type: "INT", pk: true },{ name: "cliente_id", type: "INT" },{ name: "valor", type: "DECIMAL" },{ name: "criado_em", type: "DATETIME" }] }
     ],
     hint: "Use <strong>JOIN</strong> e filtre com <strong>WHERE criado_em >= NOW() - INTERVAL 30 DAY</strong>. Ordene por <strong>criado_em DESC</strong>.",
-    result: [{ id: 1045, nome: "Fernanda Lima", valor: 890.00 },{ id: 1044, nome: "Ricardo Alves", valor: 320.50 },{ id: 1043, nome: "Ana Souza", valor: 1200.00 }]
+    result: [{ id: 1045, nome: "Fernanda Lima", valor: 890.00 },{ id: 1044, nome: "Ricardo Alves", valor: 320.50 }],
+    validation: [
+      { keywords: ["join"], points: 20, label: "JOIN com tabela clientes" },
+      { keywords: [["now()", "interval"], ["now()", "30"], ["date_sub"], ["curdate()", "interval"], ["between"]], points: 40, label: "filtro de data (últimos 30 dias)" },
+      { keywords: ["order by"], points: 15, label: "ORDER BY para ordenar" },
+      { keywords: ["desc"], points: 5, label: "DESC do mais recente" }
+    ],
+    optimizationTip: "Evite funções sobre a coluna de data no WHERE (ex: DATE(criado_em) = ...) pois impede uso de índice. Prefira >= e <=.",
+    correctQuery: "SELECT p.id, c.nome, p.valor\nFROM pedidos p\nJOIN clientes c ON p.cliente_id = c.id\nWHERE p.criado_em >= NOW() - INTERVAL 30 DAY\nORDER BY p.criado_em DESC"
   },
-
-  // ---- MÉDIOS ----
   {
-    id: 6,
-    title: "Top 5 vendedores do mês",
+    id: 6, title: "Top 5 vendedores do mês",
     desc: "Liste os 5 funcionários que mais venderam em março de 2024. Mostre o nome do funcionário e o total vendido.",
-    difficulty: "medium",
-    topic: "LIMIT + ORDER BY",
-    xp: 150,
+    difficulty: "medium", topic: "LIMIT + ORDER BY", xp: 150,
     schema: [
       { name: "funcionarios", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "departamento", type: "VARCHAR" }] },
       { name: "vendas", cols: [{ name: "id", type: "INT", pk: true },{ name: "func_id", type: "INT" },{ name: "valor", type: "DECIMAL" },{ name: "data_venda", type: "DATE" }] }
     ],
     hint: "Use <strong>JOIN</strong> + <strong>WHERE</strong> para filtrar o mês (BETWEEN '2024-03-01' AND '2024-03-31'), <strong>GROUP BY</strong> no funcionário, <strong>ORDER BY</strong> total DESC e <strong>LIMIT 5</strong>.",
-    result: [{ nome: "Roberto Silva", total_vendido: 45200.00 },{ nome: "Julia Ferreira", total_vendido: 38900.50 },{ nome: "Diego Santos", total_vendido: 32100.00 },{ nome: "Mariana Alves", total_vendido: 28750.25 },{ nome: "Paulo Mendes", total_vendido: 24300.00 }]
+    result: [{ nome: "Roberto Silva", total_vendido: 45200.00 },{ nome: "Julia Ferreira", total_vendido: 38900.50 },{ nome: "Diego Santos", total_vendido: 32100.00 },{ nome: "Mariana Alves", total_vendido: 28750.25 },{ nome: "Paulo Mendes", total_vendido: 24300.00 }],
+    validation: [
+      { keywords: ["join"], points: 15, label: "JOIN entre tabelas" },
+      { keywords: [["where", "2024"], ["where", "março"], ["between", "2024"], ["where", "03"]], points: 20, label: "filtro de data (março 2024)" },
+      { keywords: ["group by"], points: 20, label: "GROUP BY funcionário" },
+      { keywords: ["sum("], points: 15, label: "SUM() para total vendido" },
+      { keywords: ["order by"], points: 15, label: "ORDER BY para ordenar" },
+      { keywords: ["limit"], points: 15, label: "LIMIT 5" }
+    ],
+    optimizationTip: "LIMIT sem ORDER BY retorna linhas aleatórias. Sempre combine os dois para resultados previsíveis.",
+    correctQuery: "SELECT f.nome, SUM(v.valor) AS total_vendido\nFROM funcionarios f\nJOIN vendas v ON f.id = v.func_id\nWHERE v.data_venda BETWEEN '2024-03-01' AND '2024-03-31'\nGROUP BY f.id, f.nome\nORDER BY total_vendido DESC\nLIMIT 5"
   },
   {
-    id: 7,
-    title: "Clientes sem pedidos",
+    id: 7, title: "Clientes sem pedidos",
     desc: "Encontre todos os clientes que nunca fizeram nenhum pedido. Retorne apenas o nome e o email deles.",
-    difficulty: "medium",
-    topic: "LEFT JOIN + IS NULL",
-    xp: 150,
+    difficulty: "medium", topic: "LEFT JOIN + IS NULL", xp: 150,
     schema: [
       { name: "clientes", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "email", type: "VARCHAR" }] },
       { name: "pedidos", cols: [{ name: "id", type: "INT", pk: true },{ name: "cliente_id", type: "INT" },{ name: "valor", type: "DECIMAL" }] }
     ],
     hint: "Use <strong>LEFT JOIN</strong> de clientes para pedidos. Quando um cliente não tem pedido, a coluna pedidos.id será NULL. Filtre com <strong>WHERE pedidos.id IS NULL</strong>.",
-    result: [{ nome: "Fernando Gomes", email: "fernando@email.com" },{ nome: "Camila Torres", email: "camila@email.com" },{ nome: "Lucas Pinto", email: "lucas@email.com" }]
+    result: [{ nome: "Fernando Gomes", email: "fernando@email.com" },{ nome: "Camila Torres", email: "camila@email.com" }],
+    validation: [
+      { keywords: ["left join"], points: 40, label: "LEFT JOIN (não INNER JOIN)" },
+      { keywords: ["is null"], points: 40, label: "IS NULL para filtrar sem pedido" }
+    ],
+    optimizationTip: "LEFT JOIN + IS NULL é geralmente mais rápido que NOT IN com subquery em tabelas grandes.",
+    correctQuery: "SELECT c.nome, c.email\nFROM clientes c\nLEFT JOIN pedidos p ON c.id = p.cliente_id\nWHERE p.id IS NULL"
   },
   {
-    id: 8,
-    title: "Média de vendas por categoria",
+    id: 8, title: "Média de vendas por categoria",
     desc: "Calcule a média de vendas para cada categoria de produto. Mostre apenas categorias com média acima de R$ 500, ordenadas da maior para a menor.",
-    difficulty: "medium",
-    topic: "GROUP BY + HAVING + AVG",
-    xp: 150,
+    difficulty: "medium", topic: "GROUP BY + HAVING + AVG", xp: 150,
     schema: [
       { name: "categorias", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" }] },
       { name: "produtos", cols: [{ name: "id", type: "INT", pk: true },{ name: "cat_id", type: "INT" },{ name: "nome", type: "VARCHAR" }] },
       { name: "pedido_itens", cols: [{ name: "id", type: "INT", pk: true },{ name: "produto_id", type: "INT" },{ name: "valor", type: "DECIMAL" },{ name: "qtd", type: "INT" }] }
     ],
     hint: "Faça JOIN entre categorias → produtos → pedido_itens. Use <strong>AVG(valor)</strong> para a média, <strong>GROUP BY</strong> na categoria e <strong>HAVING AVG(valor) > 500</strong>.",
-    result: [{ categoria: "Eletrônicos", media_valor: 1850.00 },{ categoria: "Móveis", media_valor: 920.75 },{ categoria: "Eletrodomésticos", media_valor: 680.50 }]
+    result: [{ categoria: "Eletrônicos", media_valor: 1850.00 },{ categoria: "Móveis", media_valor: 920.75 }],
+    validation: [
+      { keywords: ["join"], points: 15, label: "JOIN entre tabelas" },
+      { keywords: ["avg("], points: 25, label: "AVG() para calcular média" },
+      { keywords: ["group by"], points: 20, label: "GROUP BY categoria" },
+      { keywords: ["having"], points: 20, label: "HAVING para filtrar grupos" }
+    ],
+    optimizationTip: "HAVING filtra APÓS a agregação. WHERE filtra ANTES — use WHERE para filtros de linhas e HAVING para filtros de grupos.",
+    correctQuery: "SELECT cat.nome AS categoria, AVG(pi.valor) AS media_valor\nFROM categorias cat\nJOIN produtos p ON cat.id = p.cat_id\nJOIN pedido_itens pi ON p.id = pi.produto_id\nGROUP BY cat.id, cat.nome\nHAVING AVG(pi.valor) > 500\nORDER BY media_valor DESC"
   },
   {
-    id: 9,
-    title: "Segundo maior salário",
+    id: 9, title: "Segundo maior salário",
     desc: "Encontre o segundo maior salário entre todos os funcionários. Retorne apenas o valor do salário.",
-    difficulty: "medium",
-    topic: "Subquery + MAX",
-    xp: 150,
+    difficulty: "medium", topic: "Subquery + MAX", xp: 150,
     schema: [
       { name: "funcionarios", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "salario", type: "DECIMAL" },{ name: "depto", type: "VARCHAR" }] }
     ],
     hint: "Use uma <strong>subquery</strong>: SELECT MAX(salario) FROM funcionarios WHERE salario < (SELECT MAX(salario) FROM funcionarios). Ou use <strong>ORDER BY salario DESC LIMIT 1 OFFSET 1</strong>.",
-    result: [{ segundo_maior_salario: 18500.00 }]
+    result: [{ segundo_maior_salario: 18500.00 }],
+    validation: [
+      { keywords: [["max(", "max("], ["order by", "limit", "offset"], ["order by", "limit 1", "offset 1"]], points: 50, label: "lógica para 2º maior (subquery com MAX ou LIMIT/OFFSET)" },
+      { keywords: [["salario", "max"], ["salario", "limit"]], points: 30, label: "referência ao campo salario" }
+    ],
+    optimizationTip: "ORDER BY + LIMIT + OFFSET é mais simples, mas subquery com MAX é portável para qualquer banco SQL.",
+    correctQuery: "SELECT MAX(salario) AS segundo_maior_salario\nFROM funcionarios\nWHERE salario < (SELECT MAX(salario) FROM funcionarios)\n\n-- Alternativa:\n-- SELECT salario FROM funcionarios ORDER BY salario DESC LIMIT 1 OFFSET 1"
   },
   {
-    id: 10,
-    title: "Produtos mais vendidos por categoria",
+    id: 10, title: "Produtos mais vendidos por categoria",
     desc: "Para cada categoria, encontre o produto mais vendido (por quantidade total). Retorne categoria, produto e quantidade total.",
-    difficulty: "medium",
-    topic: "JOIN + GROUP BY + MAX",
-    xp: 150,
+    difficulty: "medium", topic: "JOIN + GROUP BY + MAX", xp: 150,
     schema: [
       { name: "categorias", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" }] },
       { name: "produtos", cols: [{ name: "id", type: "INT", pk: true },{ name: "cat_id", type: "INT" },{ name: "nome", type: "VARCHAR" }] },
       { name: "vendas_itens", cols: [{ name: "produto_id", type: "INT" },{ name: "quantidade", type: "INT" }] }
     ],
     hint: "Agrupe por categoria e produto, some as quantidades, depois use uma subquery ou <strong>HAVING</strong> para pegar o máximo por categoria.",
-    result: [{ categoria: "Eletrônicos", produto: "iPhone 15", qtd_total: 342 },{ categoria: "Móveis", produto: "Cadeira Office", qtd_total: 218 },{ categoria: "Livros", produto: "Clean Code", qtd_total: 189 }]
+    result: [{ categoria: "Eletrônicos", produto: "iPhone 15", qtd_total: 342 },{ categoria: "Móveis", produto: "Cadeira Office", qtd_total: 218 }],
+    validation: [
+      { keywords: ["join"], points: 20, label: "JOIN entre tabelas" },
+      { keywords: ["sum(", "quantidade"], points: 25, label: "SUM(quantidade) para totalizar" },
+      { keywords: ["group by"], points: 25, label: "GROUP BY para agrupar" },
+      { keywords: [["having", "max"], ["order by", "limit"]], points: 10, label: "filtro do maior por categoria" }
+    ],
+    optimizationTip: "Para pegar o TOP 1 por grupo, Window Functions com RANK() são mais elegantes que subqueries correlacionadas.",
+    correctQuery: "SELECT cat.nome AS categoria, p.nome AS produto, SUM(vi.quantidade) AS qtd_total\nFROM categorias cat\nJOIN produtos p ON cat.id = p.cat_id\nJOIN vendas_itens vi ON p.id = vi.produto_id\nGROUP BY cat.id, cat.nome, p.id, p.nome\nORDER BY cat.nome, qtd_total DESC"
   },
-
-  // ---- MÉDIOS-AVANÇADOS ----
   {
-    id: 11,
-    title: "CASE WHEN: Classificar pedidos",
+    id: 11, title: "CASE WHEN: Classificar pedidos",
     desc: "Classifique cada pedido por faixa de valor: 'Pequeno' (< R$100), 'Médio' (R$100–R$999), 'Grande' (>= R$1000). Retorne o id, valor e a classificação.",
-    difficulty: "medium",
-    topic: "CASE WHEN",
-    xp: 150,
+    difficulty: "medium", topic: "CASE WHEN", xp: 150,
     schema: [
       { name: "pedidos", cols: [{ name: "id", type: "INT", pk: true },{ name: "cliente_id", type: "INT" },{ name: "valor", type: "DECIMAL" },{ name: "status", type: "VARCHAR" }] }
     ],
     hint: "Use <strong>CASE WHEN valor < 100 THEN 'Pequeno' WHEN valor < 1000 THEN 'Médio' ELSE 'Grande' END AS classificacao</strong> no SELECT.",
-    result: [{ id: 101, valor: 45.00, classificacao: "Pequeno" },{ id: 102, valor: 580.00, classificacao: "Médio" },{ id: 103, valor: 2100.00, classificacao: "Grande" }]
+    result: [{ id: 101, valor: 45.00, classificacao: "Pequeno" },{ id: 102, valor: 580.00, classificacao: "Médio" },{ id: 103, valor: 2100.00, classificacao: "Grande" }],
+    validation: [
+      { keywords: ["case"], points: 20, label: "CASE" },
+      { keywords: ["when"], points: 20, label: "WHEN" },
+      { keywords: ["then"], points: 20, label: "THEN" },
+      { keywords: ["else"], points: 15, label: "ELSE para o caso padrão" },
+      { keywords: ["end"], points: 5, label: "END para fechar o CASE" }
+    ],
+    optimizationTip: "CASE WHEN é avaliado em ordem — coloque as condições mais específicas primeiro para evitar resultados errados.",
+    correctQuery: "SELECT id, valor,\n  CASE\n    WHEN valor < 100 THEN 'Pequeno'\n    WHEN valor < 1000 THEN 'Médio'\n    ELSE 'Grande'\n  END AS classificacao\nFROM pedidos"
   },
   {
-    id: 12,
-    title: "Taxa de conversão por vendedor",
+    id: 12, title: "Taxa de conversão por vendedor",
     desc: "Calcule a taxa de conversão de cada vendedor: total de vendas fechadas dividido pelo total de oportunidades, em porcentagem. Mostre apenas os com taxa > 30%.",
-    difficulty: "medium",
-    topic: "CASE WHEN + Cálculo",
-    xp: 150,
+    difficulty: "medium", topic: "CASE WHEN + Cálculo", xp: 150,
     schema: [
       { name: "vendedores", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" }] },
       { name: "oportunidades", cols: [{ name: "id", type: "INT", pk: true },{ name: "vendedor_id", type: "INT" },{ name: "status", type: "VARCHAR" },{ name: "valor", type: "DECIMAL" }] }
     ],
     hint: "Use <strong>COUNT(CASE WHEN status = 'fechado' THEN 1 END)</strong> para contar fechados, divida pelo <strong>COUNT(*)</strong> total e multiplique por 100. Filtre com <strong>HAVING</strong>.",
-    result: [{ nome: "Ana Lima", taxa_conversao: 52.30 },{ nome: "Carlos Mota", taxa_conversao: 41.80 },{ nome: "Paula Reis", taxa_conversao: 33.50 }]
+    result: [{ nome: "Ana Lima", taxa_conversao: 52.30 },{ nome: "Carlos Mota", taxa_conversao: 41.80 }],
+    validation: [
+      { keywords: ["join"], points: 15, label: "JOIN com vendedores" },
+      { keywords: [["case", "when", "fechado"], ["sum", "fechado"], ["count", "fechado"]], points: 30, label: "contagem de fechados" },
+      { keywords: ["count("], points: 15, label: "COUNT() total" },
+      { keywords: ["group by"], points: 15, label: "GROUP BY vendedor" },
+      { keywords: ["having"], points: 15, label: "HAVING para filtrar > 30%" }
+    ],
+    optimizationTip: "Use ROUND() para formatar percentuais: ROUND(COUNT(...) / COUNT(*) * 100, 2).",
+    correctQuery: "SELECT v.nome,\n  ROUND(COUNT(CASE WHEN o.status = 'fechado' THEN 1 END) * 100.0 / COUNT(*), 2) AS taxa_conversao\nFROM vendedores v\nJOIN oportunidades o ON v.id = o.vendedor_id\nGROUP BY v.id, v.nome\nHAVING taxa_conversao > 30\nORDER BY taxa_conversao DESC"
   },
   {
-    id: 13,
-    title: "Clientes com múltiplos pedidos no mesmo dia",
+    id: 13, title: "Clientes com múltiplos pedidos no mesmo dia",
     desc: "Encontre clientes que fizeram mais de 1 pedido no mesmo dia. Retorne o nome do cliente, a data e a quantidade de pedidos naquele dia.",
-    difficulty: "medium",
-    topic: "GROUP BY + HAVING + DATE",
-    xp: 150,
+    difficulty: "medium", topic: "GROUP BY + HAVING + DATE", xp: 150,
     schema: [
       { name: "clientes", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" }] },
       { name: "pedidos", cols: [{ name: "id", type: "INT", pk: true },{ name: "cliente_id", type: "INT" },{ name: "valor", type: "DECIMAL" },{ name: "criado_em", type: "DATETIME" }] }
     ],
     hint: "Agrupe por <strong>cliente_id, DATE(criado_em)</strong> e use <strong>HAVING COUNT(*) > 1</strong>. Depois faça JOIN com clientes para pegar o nome.",
-    result: [{ nome: "Beatriz Costa", data: "2024-03-15", qtd_pedidos: 3 },{ nome: "Lucas Pinto", data: "2024-03-20", qtd_pedidos: 2 }]
+    result: [{ nome: "Beatriz Costa", data: "2024-03-15", qtd_pedidos: 3 }],
+    validation: [
+      { keywords: ["join"], points: 15, label: "JOIN com clientes" },
+      { keywords: [["date(", "criado_em"], ["date(criado_em"], ["cast(", "date"]], points: 25, label: "DATE() para agrupar por dia" },
+      { keywords: ["group by"], points: 20, label: "GROUP BY cliente e data" },
+      { keywords: ["having"], points: 20, label: "HAVING COUNT(*) > 1" },
+      { keywords: ["count("], points: 10, label: "COUNT() para contar pedidos" }
+    ],
+    optimizationTip: "Índices compostos em (cliente_id, criado_em) tornam este tipo de consulta muito mais eficiente.",
+    correctQuery: "SELECT c.nome, DATE(p.criado_em) AS data, COUNT(*) AS qtd_pedidos\nFROM clientes c\nJOIN pedidos p ON c.id = p.cliente_id\nGROUP BY c.id, c.nome, DATE(p.criado_em)\nHAVING COUNT(*) > 1\nORDER BY qtd_pedidos DESC"
   },
-
-  // ---- DIFÍCEIS ----
   {
-    id: 14,
-    title: "CTE: Receita acumulada mensal",
+    id: 14, title: "CTE: Receita acumulada mensal",
     desc: "Usando CTE, calcule a receita mensal e a receita acumulada (running total) ao longo de 2024. Retorne mês, receita do mês e receita acumulada.",
-    difficulty: "hard",
-    topic: "CTE + Window Function",
-    xp: 200,
+    difficulty: "hard", topic: "CTE + Window Function", xp: 200,
     schema: [
       { name: "pedidos", cols: [{ name: "id", type: "INT", pk: true },{ name: "valor", type: "DECIMAL" },{ name: "criado_em", type: "DATE" },{ name: "status", type: "VARCHAR" }] }
     ],
     hint: "Crie uma CTE com receita por mês usando <strong>DATE_FORMAT(criado_em, '%Y-%m')</strong>, depois use <strong>SUM() OVER (ORDER BY mes)</strong> para o acumulado.",
-    result: [{ mes: "2024-01", receita_mes: 45200.00, receita_acumulada: 45200.00 },{ mes: "2024-02", receita_mes: 62100.00, receita_acumulada: 107300.00 },{ mes: "2024-03", receita_mes: 58900.00, receita_acumulada: 166200.00 }]
+    result: [{ mes: "2024-01", receita_mes: 45200.00, receita_acumulada: 45200.00 },{ mes: "2024-02", receita_mes: 62100.00, receita_acumulada: 107300.00 }],
+    validation: [
+      { keywords: [["with", "as"]], points: 30, label: "CTE com WITH ... AS" },
+      { keywords: ["sum("], points: 20, label: "SUM() para receita" },
+      { keywords: ["over"], points: 30, label: "OVER() para window function" },
+      { keywords: ["order by"], points: 10, label: "ORDER BY dentro do OVER" }
+    ],
+    optimizationTip: "CTEs melhoram a legibilidade mas não são sempre mais rápidas — em MySQL, CTEs são materializadas uma vez.",
+    correctQuery: "WITH receita_mensal AS (\n  SELECT DATE_FORMAT(criado_em, '%Y-%m') AS mes, SUM(valor) AS receita_mes\n  FROM pedidos\n  WHERE YEAR(criado_em) = 2024\n  GROUP BY mes\n)\nSELECT mes, receita_mes,\n  SUM(receita_mes) OVER (ORDER BY mes) AS receita_acumulada\nFROM receita_mensal"
   },
   {
-    id: 15,
-    title: "ROW_NUMBER: Ranking de clientes por cidade",
+    id: 15, title: "ROW_NUMBER: Ranking de clientes por cidade",
     desc: "Crie um ranking dos clientes que mais gastaram dentro de cada cidade. Retorne cidade, nome do cliente, total gasto e sua posição no ranking da cidade.",
-    difficulty: "hard",
-    topic: "Window Function: ROW_NUMBER",
-    xp: 200,
+    difficulty: "hard", topic: "Window Function: ROW_NUMBER", xp: 200,
     schema: [
       { name: "clientes", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "cidade", type: "VARCHAR" }] },
       { name: "pedidos", cols: [{ name: "id", type: "INT", pk: true },{ name: "cliente_id", type: "INT" },{ name: "valor", type: "DECIMAL" }] }
     ],
     hint: "Use <strong>ROW_NUMBER() OVER (PARTITION BY cidade ORDER BY SUM(valor) DESC)</strong> após agrupar por cliente e cidade.",
-    result: [{ cidade: "São Paulo", nome: "Ana Souza", total: 8200.00, ranking: 1 },{ cidade: "São Paulo", nome: "Pedro Lima", total: 6100.00, ranking: 2 },{ cidade: "Curitiba", nome: "Mariana Alves", total: 4900.00, ranking: 1 }]
+    result: [{ cidade: "São Paulo", nome: "Ana Souza", total: 8200.00, ranking: 1 }],
+    validation: [
+      { keywords: [["row_number()", "over"], ["rank()", "over"], ["dense_rank()", "over"]], points: 40, label: "Window Function (ROW_NUMBER/RANK)" },
+      { keywords: ["partition by"], points: 30, label: "PARTITION BY cidade" },
+      { keywords: ["join"], points: 10, label: "JOIN entre tabelas" },
+      { keywords: ["sum("], points: 10, label: "SUM() para total gasto" }
+    ],
+    optimizationTip: "ROW_NUMBER() não empata — use RANK() se quiser que posições empatadas recebam o mesmo número.",
+    correctQuery: "SELECT cidade, nome, total,\n  ROW_NUMBER() OVER (PARTITION BY cidade ORDER BY total DESC) AS ranking\nFROM (\n  SELECT c.cidade, c.nome, SUM(p.valor) AS total\n  FROM clientes c\n  JOIN pedidos p ON c.id = p.cliente_id\n  GROUP BY c.id, c.nome, c.cidade\n) ranked"
   },
   {
-    id: 16,
-    title: "LAG: Crescimento de vendas mês a mês",
-    desc: "Calcule o crescimento percentual das vendas em relação ao mês anterior para cada mês de 2024. Retorne mês, total de vendas, total anterior e % de crescimento.",
-    difficulty: "hard",
-    topic: "Window Function: LAG",
-    xp: 200,
+    id: 16, title: "LAG: Crescimento de vendas mês a mês",
+    desc: "Calcule o crescimento percentual das vendas em relação ao mês anterior para cada mês de 2024.",
+    difficulty: "hard", topic: "Window Function: LAG", xp: 200,
     schema: [
       { name: "vendas", cols: [{ name: "id", type: "INT", pk: true },{ name: "valor", type: "DECIMAL" },{ name: "data_venda", type: "DATE" }] }
     ],
-    hint: "Use <strong>LAG(total_mes) OVER (ORDER BY mes)</strong> para acessar o valor do mês anterior. O crescimento é <strong>((atual - anterior) / anterior) * 100</strong>.",
-    result: [{ mes: "2024-01", total: 45200.00, anterior: null, crescimento_pct: null },{ mes: "2024-02", total: 62100.00, anterior: 45200.00, crescimento_pct: 37.39 },{ mes: "2024-03", total: 58900.00, anterior: 62100.00, crescimento_pct: -5.15 }]
+    hint: "Use <strong>LAG(total_mes) OVER (ORDER BY mes)</strong> para acessar o valor do mês anterior.",
+    result: [{ mes: "2024-01", total: 45200.00, anterior: null, crescimento_pct: null }],
+    validation: [
+      { keywords: ["lag("], points: 50, label: "Função LAG()" },
+      { keywords: ["over"], points: 20, label: "OVER() para window function" },
+      { keywords: ["order by"], points: 10, label: "ORDER BY dentro do OVER" },
+      { keywords: ["group by"], points: 10, label: "GROUP BY mês" }
+    ],
+    optimizationTip: "LAG e LEAD são funções de offset — LAG acessa linhas anteriores, LEAD acessa linhas seguintes na partição.",
+    correctQuery: "WITH vendas_mes AS (\n  SELECT DATE_FORMAT(data_venda, '%Y-%m') AS mes, SUM(valor) AS total\n  FROM vendas WHERE YEAR(data_venda) = 2024\n  GROUP BY mes\n)\nSELECT mes, total,\n  LAG(total) OVER (ORDER BY mes) AS anterior,\n  ROUND((total - LAG(total) OVER (ORDER BY mes)) / LAG(total) OVER (ORDER BY mes) * 100, 2) AS crescimento_pct\nFROM vendas_mes"
   },
   {
-    id: 17,
-    title: "Self JOIN: Hierarquia de funcionários",
-    desc: "Liste cada funcionário e o nome de seu gerente direto. Funcionários sem gerente devem aparecer com 'Sem gerente'. Ordene pelo nome do funcionário.",
-    difficulty: "hard",
-    topic: "Self JOIN + COALESCE",
-    xp: 200,
+    id: 17, title: "Self JOIN: Hierarquia de funcionários",
+    desc: "Liste cada funcionário e o nome de seu gerente direto. Funcionários sem gerente devem aparecer com 'Sem gerente'.",
+    difficulty: "hard", topic: "Self JOIN + COALESCE", xp: 200,
     schema: [
       { name: "funcionarios", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "gerente_id", type: "INT" },{ name: "cargo", type: "VARCHAR" }] }
     ],
     hint: "Faça um <strong>Self JOIN</strong>: FROM funcionarios f LEFT JOIN funcionarios g ON f.gerente_id = g.id. Use <strong>COALESCE(g.nome, 'Sem gerente')</strong> para tratar nulos.",
-    result: [{ funcionario: "Ana Lima", gerente: "Carlos Diretor" },{ funcionario: "Carlos Diretor", gerente: "Sem gerente" },{ funcionario: "Pedro Santos", gerente: "Ana Lima" }]
+    result: [{ funcionario: "Ana Lima", gerente: "Carlos Diretor" }],
+    validation: [
+      { keywords: ["left join"], points: 30, label: "LEFT JOIN para incluir todos" },
+      { keywords: [["funcionarios", "funcionarios"]], points: 25, label: "Self JOIN (mesma tabela duas vezes)" },
+      { keywords: [["coalesce", "sem gerente"], ["ifnull", "sem gerente"], ["isnull", "sem gerente"]], points: 25, label: "COALESCE para 'Sem gerente'" }
+    ],
+    optimizationTip: "Self JOINs exigem aliases obrigatoriamente — use nomes descritivos como 'f' (funcionário) e 'g' (gerente).",
+    correctQuery: "SELECT f.nome AS funcionario, COALESCE(g.nome, 'Sem gerente') AS gerente\nFROM funcionarios f\nLEFT JOIN funcionarios g ON f.gerente_id = g.id\nORDER BY f.nome"
   },
   {
-    id: 18,
-    title: "UNION: Relatório consolidado",
+    id: 18, title: "UNION: Relatório consolidado",
     desc: "Crie um relatório unindo clientes PF e clientes PJ em uma única lista. Retorne tipo ('PF' ou 'PJ'), nome e cidade, ordenados por nome.",
-    difficulty: "hard",
-    topic: "UNION ALL",
-    xp: 200,
+    difficulty: "hard", topic: "UNION ALL", xp: 200,
     schema: [
       { name: "clientes_pf", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "cpf", type: "CHAR(11)" },{ name: "cidade", type: "VARCHAR" }] },
       { name: "clientes_pj", cols: [{ name: "id", type: "INT", pk: true },{ name: "razao_social", type: "VARCHAR" },{ name: "cnpj", type: "CHAR(14)" },{ name: "cidade", type: "VARCHAR" }] }
     ],
-    hint: "Use <strong>UNION ALL</strong>: SELECT 'PF' AS tipo, nome, cidade FROM clientes_pf UNION ALL SELECT 'PJ', razao_social, cidade FROM clientes_pj. Envolva em subquery para ordenar.",
-    result: [{ tipo: "PF", nome: "Ana Souza", cidade: "São Paulo" },{ tipo: "PJ", nome: "Beta Comércio Ltda", cidade: "Curitiba" },{ tipo: "PF", nome: "Carlos Lima", cidade: "Rio de Janeiro" }]
+    hint: "Use <strong>UNION ALL</strong>: SELECT 'PF' AS tipo, nome, cidade FROM clientes_pf UNION ALL SELECT 'PJ', razao_social, cidade FROM clientes_pj.",
+    result: [{ tipo: "PF", nome: "Ana Souza", cidade: "São Paulo" }],
+    validation: [
+      { keywords: ["union"], points: 50, label: "UNION ou UNION ALL" },
+      { keywords: [["'pf'", "'pj'"], ['"pf"', '"pj"']], points: 25, label: "labels 'PF' e 'PJ'" },
+      { keywords: ["order by"], points: 5, label: "ORDER BY nome" }
+    ],
+    optimizationTip: "UNION remove duplicatas (mais lento). UNION ALL mantém tudo e é mais rápido — use quando souber que não há duplicatas.",
+    correctQuery: "SELECT 'PF' AS tipo, nome, cidade FROM clientes_pf\nUNION ALL\nSELECT 'PJ', razao_social, cidade FROM clientes_pj\nORDER BY nome"
   },
   {
-    id: 19,
-    title: "Detecção de duplicatas",
+    id: 19, title: "Detecção de duplicatas",
     desc: "Encontre registros duplicados na tabela de clientes (mesmo nome E mesmo email). Retorne o email, o nome e quantas vezes aparecem.",
-    difficulty: "hard",
-    topic: "GROUP BY + HAVING + COUNT",
-    xp: 200,
+    difficulty: "hard", topic: "GROUP BY + HAVING + COUNT", xp: 200,
     schema: [
       { name: "clientes", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "email", type: "VARCHAR" },{ name: "criado_em", type: "DATETIME" }] }
     ],
     hint: "Agrupe por <strong>nome, email</strong> e use <strong>HAVING COUNT(*) > 1</strong> para encontrar grupos com mais de uma ocorrência.",
-    result: [{ email: "joao@email.com", nome: "João Silva", ocorrencias: 3 },{ email: "maria@gmail.com", nome: "Maria Costa", ocorrencias: 2 }]
+    result: [{ email: "joao@email.com", nome: "João Silva", ocorrencias: 3 }],
+    validation: [
+      { keywords: ["group by"], points: 30, label: "GROUP BY nome e email" },
+      { keywords: ["having"], points: 30, label: "HAVING COUNT(*) > 1" },
+      { keywords: ["count("], points: 20, label: "COUNT() para contar ocorrências" }
+    ],
+    optimizationTip: "Para limpar duplicatas após detectá-las, use DELETE com subquery ou ROW_NUMBER() para manter apenas o registro mais recente.",
+    correctQuery: "SELECT email, nome, COUNT(*) AS ocorrencias\nFROM clientes\nGROUP BY nome, email\nHAVING COUNT(*) > 1\nORDER BY ocorrencias DESC"
   },
   {
-    id: 20,
-    title: "CTE Recursiva: Hierarquia completa",
+    id: 20, title: "CTE Recursiva: Hierarquia completa",
     desc: "Use uma CTE recursiva para listar toda a cadeia hierárquica de um funcionário até o CEO. Para o funcionário de id=5, mostre cada nível da hierarquia e o nome.",
-    difficulty: "hard",
-    topic: "CTE Recursiva",
-    xp: 300,
+    difficulty: "hard", topic: "CTE Recursiva", xp: 300,
     schema: [
       { name: "funcionarios", cols: [{ name: "id", type: "INT", pk: true },{ name: "nome", type: "VARCHAR" },{ name: "gerente_id", type: "INT" },{ name: "cargo", type: "VARCHAR" }] }
     ],
-    hint: "Use <strong>WITH RECURSIVE</strong>: o anchor seleciona o funcionário id=5, o recursive JOIN une com funcionarios WHERE id = gerente_id do nível anterior. Adicione um contador de nível.",
-    result: [{ nivel: 0, nome: "Pedro Analista", cargo: "Analista" },{ nivel: 1, nome: "Ana Lima", cargo: "Gerente" },{ nivel: 2, nome: "Carlos CEO", cargo: "CEO" }]
+    hint: "Use <strong>WITH RECURSIVE</strong>: o anchor seleciona o funcionário id=5, o recursive JOIN une com funcionarios WHERE id = gerente_id do nível anterior.",
+    result: [{ nivel: 0, nome: "Pedro Analista", cargo: "Analista" },{ nivel: 1, nome: "Ana Lima", cargo: "Gerente" },{ nivel: 2, nome: "Carlos CEO", cargo: "CEO" }],
+    validation: [
+      { keywords: ["with recursive"], points: 40, label: "WITH RECURSIVE" },
+      { keywords: [["with", "as"]], points: 10, label: "estrutura de CTE" },
+      { keywords: ["union all"], points: 20, label: "UNION ALL na CTE recursiva" },
+      { keywords: ["join"], points: 10, label: "JOIN recursivo" }
+    ],
+    optimizationTip: "Sempre inclua uma condição de parada na CTE recursiva (ex: WHERE gerente_id IS NOT NULL) para evitar loops infinitos.",
+    correctQuery: "WITH RECURSIVE hierarquia AS (\n  SELECT id, nome, gerente_id, cargo, 0 AS nivel\n  FROM funcionarios WHERE id = 5\n  UNION ALL\n  SELECT f.id, f.nome, f.gerente_id, f.cargo, h.nivel + 1\n  FROM funcionarios f\n  JOIN hierarquia h ON f.id = h.gerente_id\n)\nSELECT nivel, nome, cargo FROM hierarquia ORDER BY nivel"
   }
 ];
 
@@ -1199,141 +1290,59 @@ function normalizeSQL(q) {
   return q.toLowerCase().replace(/\s+/g, ' ').replace(/[`"]/g, '').trim();
 }
 
-function hasKeywords(q, keywords) {
-  const n = normalizeSQL(q);
-  return keywords.every(kw => n.includes(kw.toLowerCase()));
-}
-
 function evaluateQuery(query, ch) {
   const n = normalizeSQL(query);
-  const hints = ch.hint.replace(/<[^>]+>/g, '').toLowerCase();
-  let score = 0;
-  let issues = [];
-  let tips = [];
 
-  // Must have SELECT
-  if (!n.includes('select')) {
-    return { correct: false, score: 0, explanation: "Sua query precisa começar com SELECT.", optimization: "Toda query começa com SELECT.", encouragement: "Comece pelo básico: SELECT ... FROM ..." };
-  }
-  score += 10;
-
-  // Check topic-specific keywords
-  const topic = ch.topic.toLowerCase();
-
-  if (topic.includes('join') || topic.includes('null')) {
-    if (n.includes('join')) score += 20; else issues.push("JOIN entre tabelas");
-    if (topic.includes('left') && n.includes('left join')) score += 15; else if (topic.includes('left')) issues.push("LEFT JOIN (não INNER JOIN)");
-    if (topic.includes('null') && n.includes('is null')) score += 15; else if (topic.includes('null')) issues.push("IS NULL para filtrar");
+  // Must have SELECT and FROM
+  if (!n.includes('select') || !n.includes('from')) {
+    return {
+      correct: false, score: 5,
+      explanation: "Sua query precisa ter pelo menos SELECT e FROM.",
+      optimization: "Toda query começa com SELECT ... FROM tabela.",
+      correct_query: '', encouragement: "Comece pelo básico!"
+    };
   }
 
-  if (topic.includes('sum') || topic.includes('agregação') || topic.includes('avg') || topic.includes('having')) {
-    if (n.includes('group by')) score += 20; else issues.push("GROUP BY para agrupar");
-    if (n.includes('having')) score += 15; else if (topic.includes('having')) issues.push("HAVING para filtrar grupos");
-    if (n.includes('sum(') || n.includes('avg(') || n.includes('count(')) score += 15; else issues.push("Função de agregação (SUM, AVG ou COUNT)");
+  // Per-challenge validation rules
+  const rules = ch.validation || [];
+  let score = 20; // base score for having SELECT + FROM
+  let missing = [];
+
+  for (const rule of rules) {
+    const keywords = Array.isArray(rule.keywords) ? rule.keywords : [rule.keywords];
+    const found = keywords.some(kw => {
+      if (Array.isArray(kw)) return kw.every(k => n.includes(k.toLowerCase()));
+      return n.includes(kw.toLowerCase());
+    });
+    if (found) {
+      score += rule.points;
+    } else {
+      missing.push(rule.label);
+    }
   }
 
-  if (topic.includes('count')) {
-    if (n.includes('count(')) score += 25; else issues.push("COUNT() para contar registros");
-    if (n.includes('group by')) score += 20; else issues.push("GROUP BY para agrupar por campo");
-  }
-
-  if (topic.includes('limit') || topic.includes('order')) {
-    if (n.includes('order by')) score += 20; else issues.push("ORDER BY para ordenar");
-    if (n.includes('limit')) score += 15; else if (topic.includes('limit')) issues.push("LIMIT para limitar resultados");
-  }
-
-  if (topic.includes('case')) {
-    if (n.includes('case') && n.includes('when') && n.includes('then')) score += 35; else issues.push("CASE WHEN ... THEN ... END");
-  }
-
-  if (topic.includes('subquery') || topic.includes('max')) {
-    if (n.includes('select') && (n.split('select').length > 2 || n.includes('max('))) score += 30; else issues.push("Subquery ou MAX()");
-  }
-
-  if (topic.includes('cte') || topic.includes('with')) {
-    if (n.includes('with') && n.includes('as')) score += 40; else issues.push("WITH ... AS (CTE)");
-    if (topic.includes('recursiv') && n.includes('recursive')) score += 20; else if (topic.includes('recursiv')) issues.push("WITH RECURSIVE");
-  }
-
-  if (topic.includes('window') || topic.includes('row_number') || topic.includes('lag') || topic.includes('rank')) {
-    if (n.includes('over') && n.includes('(')) score += 35; else issues.push("Window Function com OVER()");
-    if (n.includes('partition by')) score += 15; else if (topic.includes('row_number') || topic.includes('rank')) issues.push("PARTITION BY para particionar");
-    if (topic.includes('lag') && n.includes('lag(')) score += 15; else if (topic.includes('lag')) issues.push("Função LAG()");
-  }
-
-  if (topic.includes('self join')) {
-    if (n.split('join').length > 2 || (n.includes('join') && n.match(/from (\w+) (\w+).*join \1/))) score += 30;
-    else issues.push("Self JOIN (mesma tabela com alias diferente)");
-    if (n.includes('coalesce') || n.includes('ifnull') || n.includes('isnull')) score += 15; else issues.push("COALESCE para tratar valores nulos");
-  }
-
-  if (topic.includes('union')) {
-    if (n.includes('union')) score += 40; else issues.push("UNION ou UNION ALL para combinar resultados");
-  }
-
-  if (topic.includes('distinct')) {
-    if (n.includes('distinct')) score += 30; else issues.push("DISTINCT para valores únicos");
-  }
-
-  if (topic.includes('date')) {
-    if (n.includes('date') || n.includes('interval') || n.includes('now()') || n.includes('between')) score += 25;
-    else issues.push("Filtro de data (BETWEEN, NOW(), INTERVAL)");
-  }
-
-  // FROM clause check
-  if (n.includes('from')) score += 5;
-
-  // Penalize if SELECT * with no conditions on complex topics
-  if (n === 'select * from ' + (ch.schema[0]?.name || '') && score < 40) score = 15;
-
-  // Cap score
   score = Math.min(score, 100);
+  const correct = score >= 75;
 
-  // Build explanation
   let explanation = '';
-  let optimization = '';
-
-  if (score >= 85) {
-    explanation = "Excelente! Sua query tem a estrutura correta e usa as cláusulas certas para resolver o problema.";
-    optimization = "Considere adicionar aliases descritivos (AS) para tornar o resultado mais legível.";
-  } else if (score >= 60) {
-    explanation = `Boa tentativa! Sua query está no caminho certo, mas está faltando: ${issues.slice(0,2).join(', ')}.`;
-    optimization = `Dica: ${ch.hint.replace(/<[^>]+>/g, '')}`;
-  } else if (score >= 30) {
-    explanation = `Sua query precisa de alguns ajustes. Elementos faltando: ${issues.slice(0,3).join(', ')}.`;
-    optimization = `Dica: ${ch.hint.replace(/<[^>]+>/g, '')}`;
+  if (correct) {
+    explanation = "Ótimo! Sua query tem a estrutura correta para resolver este desafio.";
+  } else if (missing.length > 0) {
+    explanation = `Sua query está incompleta. Elementos faltando: ${missing.slice(0,3).join(', ')}.`;
   } else {
-    explanation = `A query está incompleta. Para este desafio você precisa de: ${issues.slice(0,3).join(', ')}.`;
-    optimization = `Dica: ${ch.hint.replace(/<[^>]+>/g, '')}`;
+    explanation = "Sua query está quase lá! Revise a lógica e os filtros.";
   }
 
-  const encouragements = {
-    high: ["🔥 Arrasou! Continue assim!", "💪 Quase perfeito!", "🚀 Você manda bem em SQL!"],
-    mid: ["💡 Está quase lá!", "🧠 Boa lógica, ajuste os detalhes!", "📈 Progredindo bem!"],
-    low: ["🌱 Todo expert já foi iniciante!", "💪 Não desista, você consegue!", "🎯 Analise a dica e tente de novo!"]
-  };
-  const enc = score >= 80 ? encouragements.high : score >= 50 ? encouragements.mid : encouragements.low;
-  const encouragement = enc[Math.floor(Math.random() * enc.length)];
+  const optimization = ch.optimizationTip || "Sempre use aliases (AS) para deixar as colunas do resultado mais legíveis.";
 
-  // Build correct query hint
-  const correctExamples = {
-    "JOIN": `SELECT c.nome, SUM(p.valor) AS total_gasto\nFROM clientes c\nJOIN pedidos p ON c.id = p.cliente_id\nGROUP BY c.id, c.nome\nHAVING SUM(p.valor) > 1000\nORDER BY total_gasto DESC`,
-    "LEFT JOIN + IS NULL": `SELECT c.nome, c.email\nFROM clientes c\nLEFT JOIN pedidos p ON c.id = p.cliente_id\nWHERE p.id IS NULL`,
-    "CASE WHEN": `SELECT id, valor,\n  CASE\n    WHEN valor < 100 THEN 'Pequeno'\n    WHEN valor < 1000 THEN 'Médio'\n    ELSE 'Grande'\n  END AS classificacao\nFROM pedidos`,
-    "CTE Recursiva": `WITH RECURSIVE hierarquia AS (\n  SELECT id, nome, gerente_id, cargo, 0 AS nivel\n  FROM funcionarios WHERE id = 5\n  UNION ALL\n  SELECT f.id, f.nome, f.gerente_id, f.cargo, h.nivel + 1\n  FROM funcionarios f\n  JOIN hierarquia h ON f.id = h.gerente_id\n)\nSELECT nivel, nome, cargo FROM hierarquia`,
-    "Window Function: LAG": `WITH vendas_mes AS (\n  SELECT DATE_FORMAT(data_venda, '%Y-%m') AS mes, SUM(valor) AS total\n  FROM vendas GROUP BY mes\n)\nSELECT mes, total,\n  LAG(total) OVER (ORDER BY mes) AS anterior,\n  ROUND((total - LAG(total) OVER (ORDER BY mes)) / LAG(total) OVER (ORDER BY mes) * 100, 2) AS crescimento_pct\nFROM vendas_mes`,
-  };
+  const encs = correct
+    ? ["🔥 Arrasou!", "💪 Perfeito!", "🚀 Você manda bem em SQL!"]
+    : score >= 50
+      ? ["💡 Quase lá!", "🧠 Boa lógica, ajuste os detalhes!", "📈 Progredindo!"]
+      : ["🌱 Todo expert já foi iniciante!", "💪 Não desista!", "🎯 Analise a dica e tente de novo!"];
+  const encouragement = encs[Math.floor(Math.random() * encs.length)];
 
-  const correct_query = correctExamples[ch.topic] || `-- Consulte a dica acima para montar a query correta!\n-- Tópico: ${ch.topic}`;
-
-  return {
-    correct: score >= 85,
-    score,
-    explanation,
-    optimization,
-    correct_query,
-    encouragement
-  };
+  return { correct, score, explanation, optimization, correct_query: ch.correctQuery || '', encouragement };
 }
 
 // ===== RUN QUERY =====
