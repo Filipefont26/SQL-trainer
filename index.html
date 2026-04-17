@@ -847,10 +847,10 @@ const CHALLENGES = [
     hint: "Use <strong>JOIN</strong> para unir as tabelas, <strong>SUM()</strong> para somar os valores por cliente, <strong>GROUP BY</strong> para agrupar e <strong>HAVING</strong> para filtrar grupos com soma > 1000.",
     result: [{ nome: "Ana Souza", total_gasto: 3420.50 },{ nome: "Carlos Lima", total_gasto: 2180.00 },{ nome: "Beatriz Costa", total_gasto: 1550.75 }],
     validation: [
-      { keywords: ["join"], points: 20, label: "JOIN entre tabelas" },
-      { keywords: ["sum("], points: 20, label: "SUM() para somar valores" },
-      { keywords: ["group by"], points: 20, label: "GROUP BY para agrupar" },
-      { keywords: ["having"], points: 15, label: "HAVING para filtrar grupos" },
+      { keywords: ["join"], points: 25, label: "JOIN entre tabelas" },
+      { keywords: ["sum("], points: 25, label: "SUM() para somar valores" },
+      { keywords: ["group by"], points: 25, label: "GROUP BY para agrupar" },
+      { keywords: ["having"], points: 20, label: "HAVING para filtrar grupos (não WHERE)" },
       { keywords: ["order by"], points: 5, label: "ORDER BY para ordenar" }
     ],
     optimizationTip: "Use aliases descritivos: SUM(p.valor) AS total_gasto para deixar o resultado claro.",
@@ -866,10 +866,10 @@ const CHALLENGES = [
     hint: "Use <strong>WHERE</strong> com duas condições: quantidade = 0 E ativo = true. Use <strong>AND</strong> para combinar as condições.",
     result: [{ nome: "Notebook Pro", categoria: "Eletrônicos" },{ nome: "Cadeira Gamer", categoria: "Móveis" }],
     validation: [
-      { keywords: ["where"], points: 25, label: "WHERE para filtrar" },
-      { keywords: [["quantidade", "0"], ["quantidade=0"], ["quantidade =0"], ["quantidade= 0"]], points: 25, label: "filtro quantidade = 0" },
-      { keywords: [["ativo", "true"], ["ativo", "1"], ["ativo=true"], ["ativo =true"]], points: 25, label: "filtro ativo = true" },
-      { keywords: ["and"], points: 5, label: "AND para combinar condições" }
+      { keywords: ["where"], points: 20, label: "WHERE para filtrar" },
+      { keywords: [["quantidade", "= 0"], ["quantidade", "=0"]], points: 35, label: "filtro quantidade = 0" },
+      { keywords: [["ativo", "true"], ["ativo", "= 1"], ["ativo", "=1"]], points: 35, label: "filtro ativo = true/1" },
+      { keywords: ["and"], points: 10, label: "AND para combinar condições" }
     ],
     optimizationTip: "Índices em colunas usadas no WHERE (quantidade, ativo) aceleram muito a busca em tabelas grandes.",
     correctQuery: "SELECT nome, categoria\nFROM produtos\nWHERE quantidade = 0 AND ativo = true"
@@ -884,8 +884,8 @@ const CHALLENGES = [
     hint: "Use <strong>DISTINCT</strong> e a função <strong>SUBSTRING_INDEX(email, '@', -1)</strong> para extrair o domínio. Ordene com <strong>ORDER BY</strong>.",
     result: [{ dominio: "gmail.com" },{ dominio: "hotmail.com" },{ dominio: "outlook.com" },{ dominio: "yahoo.com" }],
     validation: [
-      { keywords: ["distinct"], points: 30, label: "DISTINCT para valores únicos" },
-      { keywords: [["substring_index", "@"], ["substring", "@"], ["split_part", "@"]], points: 40, label: "extração do domínio após o @" },
+      { keywords: ["distinct"], points: 35, label: "DISTINCT para valores únicos" },
+      { keywords: [["substring_index", "@"], ["substring_index", "email"], ["split_part", "@"], ["substr", "@"]], points: 55, label: "extração do domínio após o @ com SUBSTRING_INDEX ou similar" },
       { keywords: ["order by"], points: 10, label: "ORDER BY alfabético" }
     ],
     optimizationTip: "SUBSTRING_INDEX é eficiente para parsing de strings simples no MySQL. Em PostgreSQL use SPLIT_PART(email, '@', 2).",
@@ -960,8 +960,8 @@ const CHALLENGES = [
     hint: "Use <strong>LEFT JOIN</strong> de clientes para pedidos. Quando um cliente não tem pedido, a coluna pedidos.id será NULL. Filtre com <strong>WHERE pedidos.id IS NULL</strong>.",
     result: [{ nome: "Fernando Gomes", email: "fernando@email.com" },{ nome: "Camila Torres", email: "camila@email.com" }],
     validation: [
-      { keywords: ["left join"], points: 40, label: "LEFT JOIN (não INNER JOIN)" },
-      { keywords: ["is null"], points: 40, label: "IS NULL para filtrar sem pedido" }
+      { keywords: ["left join"], points: 50, label: "LEFT JOIN (não INNER JOIN)" },
+      { keywords: ["is null"], points: 50, label: "IS NULL para filtrar sem pedido" }
     ],
     optimizationTip: "LEFT JOIN + IS NULL é geralmente mais rápido que NOT IN com subquery em tabelas grandes.",
     correctQuery: "SELECT c.nome, c.email\nFROM clientes c\nLEFT JOIN pedidos p ON c.id = p.cliente_id\nWHERE p.id IS NULL"
@@ -1091,9 +1091,9 @@ const CHALLENGES = [
     hint: "Crie uma CTE com receita por mês usando <strong>DATE_FORMAT(criado_em, '%Y-%m')</strong>, depois use <strong>SUM() OVER (ORDER BY mes)</strong> para o acumulado.",
     result: [{ mes: "2024-01", receita_mes: 45200.00, receita_acumulada: 45200.00 },{ mes: "2024-02", receita_mes: 62100.00, receita_acumulada: 107300.00 }],
     validation: [
-      { keywords: [["with", "as"]], points: 30, label: "CTE com WITH ... AS" },
+      { keywords: [["with", "as"]], points: 35, label: "CTE com WITH ... AS" },
       { keywords: ["sum("], points: 20, label: "SUM() para receita" },
-      { keywords: ["over"], points: 30, label: "OVER() para window function" },
+      { keywords: ["over"], points: 35, label: "OVER() para window function acumulada" },
       { keywords: ["order by"], points: 10, label: "ORDER BY dentro do OVER" }
     ],
     optimizationTip: "CTEs melhoram a legibilidade mas não são sempre mais rápidas — em MySQL, CTEs são materializadas uma vez.",
@@ -1296,39 +1296,57 @@ function evaluateQuery(query, ch) {
   // Must have SELECT and FROM
   if (!n.includes('select') || !n.includes('from')) {
     return {
-      correct: false, score: 5,
+      correct: false, score: 0,
       explanation: "Sua query precisa ter pelo menos SELECT e FROM.",
       optimization: "Toda query começa com SELECT ... FROM tabela.",
-      correct_query: '', encouragement: "Comece pelo básico!"
+      correct_query: ch.correctQuery || '', encouragement: "Comece pelo básico!"
     };
   }
 
-  // Per-challenge validation rules
+  // Run per-challenge rules — each rule is REQUIRED unless marked optional
   const rules = ch.validation || [];
-  let score = 20; // base score for having SELECT + FROM
+  let totalPoints = 0;
+  let earnedPoints = 0;
   let missing = [];
 
   for (const rule of rules) {
-    const keywords = Array.isArray(rule.keywords) ? rule.keywords : [rule.keywords];
-    const found = keywords.some(kw => {
-      if (Array.isArray(kw)) return kw.every(k => n.includes(k.toLowerCase()));
-      return n.includes(kw.toLowerCase());
-    });
-    if (found) {
-      score += rule.points;
+    totalPoints += rule.points;
+
+    // keywords can be:
+    // "word"          → n must include it
+    // ["a","b"]       → n must include ALL of them (AND)
+    // [["a","b"],["c"]] → n must match at least ONE sub-array (OR of ANDs)
+    const kw = rule.keywords;
+    let matched = false;
+
+    if (typeof kw === 'string') {
+      matched = n.includes(kw.toLowerCase());
+    } else if (Array.isArray(kw)) {
+      // Check if first element is also an array → OR logic
+      if (Array.isArray(kw[0])) {
+        matched = kw.some(group => group.every(k => n.includes(k.toLowerCase())));
+      } else {
+        // All strings → AND logic
+        matched = kw.every(k => n.includes(k.toLowerCase()));
+      }
+    }
+
+    if (matched) {
+      earnedPoints += rule.points;
     } else {
       missing.push(rule.label);
     }
   }
 
-  score = Math.min(score, 100);
-  const correct = score >= 75;
+  // Score is purely based on earned vs total — no free base points
+  const score = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
+  const correct = score >= 80 && missing.length === 0;
 
   let explanation = '';
   if (correct) {
     explanation = "Ótimo! Sua query tem a estrutura correta para resolver este desafio.";
   } else if (missing.length > 0) {
-    explanation = `Sua query está incompleta. Elementos faltando: ${missing.slice(0,3).join(', ')}.`;
+    explanation = "Elementos faltando na sua query: " + missing.slice(0, 3).join(', ') + ".";
   } else {
     explanation = "Sua query está quase lá! Revise a lógica e os filtros.";
   }
@@ -1369,7 +1387,7 @@ function runQuery() {
       const result = evaluateQuery(query, ch);
       showFeedback(result, ch);
 
-      if (result.correct || result.score >= 70) {
+      if (result.correct === true) {
         state.correct++;
         const xpEarned = state.hintUsed ? Math.floor(ch.xp * 0.6) : ch.xp;
         state.xp += xpEarned;
@@ -1396,7 +1414,7 @@ function showFeedback(result, ch) {
   const subtitle = document.getElementById('feedback-subtitle');
   const body = document.getElementById('feedback-body');
 
-  const isCorrect = result.correct || result.score >= 70;
+  const isCorrect = result.correct === true;
   const cls = isCorrect ? 'correct' : 'wrong';
 
   header.className = `feedback-header ${cls}`;
